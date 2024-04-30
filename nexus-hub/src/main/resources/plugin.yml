@@ -1,0 +1,19 @@
+name: "${project.name}"
+version: "${project.version}"
+website: "${project.parent.url}"
+author: Agon KOLGECI
+
+load: POSTWORLD
+main: com.agonkolgeci.nexus_hub.NexusHubBootstrap
+
+depend: [ Nexus-SpigotAPI ]
+
+softdepend: [ UltraCosmetics ]
+
+commands:
+  spawn:
+    description: "Se téléporter au spawn."
+    usage: "/<command>"
+  speed:
+    description: "Changer sa vitesse de marche/vol."
+    usage: "/<command> <nombre>"

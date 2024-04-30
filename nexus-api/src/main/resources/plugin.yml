@@ -1,0 +1,9 @@
+name: "${project.name}"
+version: "${project.version}"
+website: "${project.parent.url}"
+author: Agon KOLGECI
+
+load: POSTWORLD
+main: com.agonkolgeci.nexus_spigotapi.NexusAPIBootstrap
+
+depend: [ ProtocolLib, LuckPerms ]

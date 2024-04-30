@@ -1,0 +1,237 @@
+database:
+  host: localhost
+  name: nexus_hub
+  username: root
+  password: ""
+
+spawn:
+  world: "hub_world"
+
+  center:
+    x: -1.5
+    y: 80.5
+    z: -3.5
+    yaw: -180.0
+    pitch: 0.0
+
+ads:
+  boss-bar:
+    delay: 0.0
+    period: 20.0
+
+    color: YELLOW
+    overlay: PROGRESS
+
+    messages:
+      - "<gold>Connectez-vous depuis : <yellow>nexus.agonkolgeci.com !"
+      - "<green>Retrouvez tout sur GitHub: <dark_green>github.com/agonkolgeci"
+
+  action-bar:
+    delay: 0.0
+    period: 0.1
+
+    messages:
+      - "<b><yellow>nexus.agonkolgeci.com"
+
+jumps:
+  'Parcours du ciel':
+    world: hub_world
+    walk-speed: 0.3
+
+    lobby:
+      x: 53.5
+      y: 79.5
+      z: 16.5
+      yaw: 0.0
+      pitch: -5.0
+
+    start:
+      x: 53.0
+      y: 80.0
+      z: 24.0
+      yaw: 0.0
+      pitch: 0.0
+
+    checkpoints:
+      '1':
+        x: 56.0
+        y: 110.0
+        z: 80.0
+        yaw: 90.0
+        pitch: 0.0
+      '2':
+        x: 52.0
+        y: 131.0
+        z: 130.0
+        yaw: 90.0
+        pitch: 0.0
+      '3':
+        x: -38.0
+        y: 154.0
+        z: 142.0
+        yaw: 180.0
+        pitch: 0.0
+      '4':
+        x: -89.0
+        y: 179.0
+        z: 65.0
+        yaw: 180.0
+        pitch: 0.0
+      '5':
+        x: -102.0
+        y: 196.0
+        z: -47.0
+        yaw: 90.0
+        pitch: 0.0
+      '6':
+        x: -22.0
+        y: 226.0
+        z: -136.0
+        yaw: -90.0
+        pitch: 0.0
+
+    finish:
+      x: 56.0
+      y: 232.0
+      z: -222.0
+
+    leaderboard:
+      location:
+        x: 57.5
+        y: 81.0
+        z: 15.5
+
+      title: "<b><red>Classement du Parcours du ciel"
+      direction: DOWN
+      limit: 5
+  'Parcours du combattant':
+    world: hub_world
+    walk-speed: 0.3
+
+    lobby:
+      x: 156.5
+      y: 78.5
+      z: -93.5
+      yaw: -72.5
+      pitch: 0.0
+
+    start:
+      x: 162.0
+      y: 78.0
+      z: -92.0
+      yaw: -90.0
+      pitch: 0.0
+
+    checkpoints:
+      '1':
+        x: 174.0
+        y: 100.0
+        z: -57.0
+        yaw: -75.0
+        pitch: -2.5
+      '2':
+        x: 186.0
+        y: 140.0
+        z: -13.0
+        yaw: 15.5
+        pitch: 2.5
+        lowerY: 86.0
+      '3':
+        x: 157.0
+        y: 99.0
+        z: 76.0
+        yaw: -7.5
+        pitch: 2.5
+        lowerY: 83.0
+      '4':
+        x: 178.0
+        y: 108.0
+        z: 115.0
+        yaw: 35.0
+        pitch: 0.0
+        lowerY: 90.0
+
+    finish:
+      x: 110.0
+      y: 90.0
+      z: 158.0
+
+    leaderboard:
+      location:
+        x: 162.5
+        y: 79.0
+        z: -99.5
+
+      title: "<b><gold>Classement du Parcours du combattant"
+      direction: DOWN
+      limit: 5
+  'Parcours de découverte':
+    world: hub_world
+    walk-speed: 0.3
+
+    lobby:
+      x: -50.0
+      y: 74.5
+      z: -39.5
+      yaw: 90.0
+      pitch: 0.0
+
+    start:
+      x: -56.0
+      y: 74.0
+      z: -40.0
+      yaw: 45.0
+      pitch: 5.0
+      lowerY: 68.0
+
+    checkpoints:
+      '1':
+        x: -63.0
+        y: 68.0
+        z: 24.0
+        yaw: -45.0
+        pitch: 5.0
+        lowerY: 66.0
+      '2':
+        x: -7.0
+        y: 69.0
+        z: 58.0
+        yaw: -90.0
+        pitch: 15.0
+        lowerY: 65.0
+      '3':
+        x: 56.0
+        y: 68.0
+        z: 39.0
+        yaw: -150.0
+        pitch: 10.0
+        lowerY: 65.0
+      '4':
+        x: 87.0
+        y: 66.0
+        z: -5.0
+        yaw: 155.0
+        pitch: 5.0
+        lowerY: 66.0
+      '5':
+        x: 29.0
+        y: 68.0
+        z: -67.0
+        yaw: 90.0
+        pitch: 10.0
+        lowerY: 67.0
+
+    finish:
+      x: -48.0
+      y: 76.0
+      z: -48.0
+
+    leaderboard:
+      location:
+        x: -59.5
+        y: 77.0
+        z: -39.5
+
+      title: "<b><green>Classement du Parcours de découverte"
+      direction: DOWN
+      limit: 5
