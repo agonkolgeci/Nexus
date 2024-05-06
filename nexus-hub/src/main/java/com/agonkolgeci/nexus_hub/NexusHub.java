@@ -1,68 +1,75 @@
 package com.agonkolgeci.nexus_hub;
 
-import com.agonkolgeci.nexus_hub.core.ads.AdsController;
-import com.agonkolgeci.nexus_hub.core.jumps.JumpsController;
-import com.agonkolgeci.nexus_hub.core.players.HubPlayersController;
-import com.agonkolgeci.nexus_hub.core.spawn.SpawnController;
-import com.agonkolgeci.nexus_hub.core.utils.UtilitiesController;
-import com.agonkolgeci.nexus_api.NexusBootstrap;
-import com.agonkolgeci.nexus_api.NexusPlugin;
-import com.agonkolgeci.nexus_api.common.config.ConfigController;
-import com.agonkolgeci.nexus_api.common.database.DatabaseController;
+import com.agonkolgeci.nexus.AbstractBootstrap;
+import com.agonkolgeci.nexus.AbstractPlugin;
+import com.agonkolgeci.nexus.api.database.AbstractDatabaseManager;
+import com.agonkolgeci.nexus.common.config.ConfigManager;
+import com.agonkolgeci.nexus_hub.core.ads.AdsManager;
+import com.agonkolgeci.nexus_hub.core.database.DatabaseManager;
+import com.agonkolgeci.nexus_hub.core.gui.GuiManager;
+import com.agonkolgeci.nexus_hub.core.interactions.InteractionsManager;
+import com.agonkolgeci.nexus_hub.core.jumps.JumpsManager;
+import com.agonkolgeci.nexus_hub.core.players.HubPlayersManager;
+import com.agonkolgeci.nexus_hub.core.spawn.SpawnManager;
+import com.agonkolgeci.nexus_hub.core.utilities.UtilitiesManager;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 @Getter
-public final class NexusHub extends NexusPlugin {
+public final class NexusHub extends AbstractPlugin {
 
-    @NotNull private final ConfigController configController;
-    @NotNull private final DatabaseController databaseController;
+    @NotNull private final ConfigManager configManager;
+    @NotNull private final AbstractDatabaseManager databaseManager;
 
-    @NotNull private final UtilitiesController utilitiesController;
-    @NotNull private final SpawnController spawnController;
-    @NotNull private final AdsController adsController;
-    @NotNull private final JumpsController jumpsController;
+    @NotNull private final HubPlayersManager playersController;
+    @NotNull private final GuiManager guiManager;
+    @NotNull private final InteractionsManager interactionsManager;
 
-    @NotNull private final HubPlayersController playersController;
+    @NotNull private final UtilitiesManager utilitiesManager;
+    @NotNull private final SpawnManager spawnManager;
+    @NotNull private final AdsManager adsManager;
+    @NotNull private final JumpsManager jumpsManager;
 
-    public NexusHub(@NotNull NexusBootstrap bootstrap) {
+    public NexusHub(@NotNull AbstractBootstrap bootstrap) {
         super(bootstrap);
 
-        configController = new ConfigController(this);
-        databaseController = new DatabaseController(this, configController.of("database"));
+        configManager = new ConfigManager(this);
+        databaseManager = new DatabaseManager(this, configManager.of("database"));
 
-        utilitiesController = new UtilitiesController(this);
-        spawnController = new SpawnController(this, configController.of("spawn"));
-        adsController = new AdsController(this, configController.of("ads"));
-        jumpsController = new JumpsController(this, configController.of("jumps"));
+        playersController = new HubPlayersManager(this);
+        guiManager = new GuiManager(this);
+        interactionsManager = new InteractionsManager(this);
 
-        playersController = new HubPlayersController(this);
+        utilitiesManager = new UtilitiesManager(this);
+
+        spawnManager = new SpawnManager(this, configManager.of("spawn"));
+        adsManager = new AdsManager(this, configManager.of("ads"));
+        jumpsManager = new JumpsManager(this, configManager.of("jumps"));
     }
 
     @Override
     public void load() throws Exception {
-        super.load();
-
-        databaseController.loadSchema(plugin.getResource("database/schema.sql"));
-
-        utilitiesController.load();
-        spawnController.load();
-        adsController.load();
-        jumpsController.load();
+        databaseManager.load();
 
         playersController.load();
+
+        utilitiesManager.load();
+        spawnManager.load();
+        adsManager.load();
+        jumpsManager.load();
     }
 
     @Override
     public void unload() {
         super.unload();
 
+        databaseManager.unload();
         playersController.unload();
 
-        jumpsController.unload();
-        adsController.unload();
-        spawnController.unload();
-        utilitiesController.unload();
+        utilitiesManager.unload();
+        spawnManager.unload();
+        adsManager.unload();
+        jumpsManager.unload();
     }
 
 }

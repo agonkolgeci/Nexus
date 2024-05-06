@@ -20,7 +20,7 @@ Nexus API is the project providing the abstract layer of the API used on game se
 > Software: [Spigot 1.8](https://www.spigotmc.org/)
 
 - Dependencies: [HikariCP](https://github.com/brettwooldridge/HikariCP), [Adventure API](https://github.com/KyoriPowered/adventure)
-- Requirements: [ProtocolLib](https://github.com/dmulloy2/ProtocolLib), [LuckPerms](https://github.com/LuckPerms/LuckPerms)
+- Requirements: [LuckPerms](https://github.com/LuckPerms/LuckPerms)
 
 ---
 
@@ -30,7 +30,6 @@ Nexus Hub is the project that welcomes players once they are connected to the in
 > Software: [Spigot 1.8](https://www.spigotmc.org/)
 
 - Requirements: [Nexus API](#nexus-api)
-- Optional Requirements: [UltraCosmetics](https://github.com/UltraCosmetics/UltraCosmetics)
 
 ---
 

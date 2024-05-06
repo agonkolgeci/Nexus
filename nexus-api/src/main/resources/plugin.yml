@@ -4,6 +4,6 @@ website: "${project.parent.url}"
 author: Agon KOLGECI
 
 load: POSTWORLD
-main: com.agonkolgeci.nexus_api.NexusAPIBootstrap
+main: com.agonkolgeci.nexus.NexusAPIBootstrap
 
-depend: [ ProtocolLib, LuckPerms ]
+depend: [ LuckPerms ]

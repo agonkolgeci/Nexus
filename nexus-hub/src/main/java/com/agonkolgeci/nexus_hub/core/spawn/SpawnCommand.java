@@ -1,8 +1,8 @@
 package com.agonkolgeci.nexus_hub.core.spawn;
 
-import com.agonkolgeci.nexus_api.common.commands.CommandAdapter;
-import com.agonkolgeci.nexus_api.common.commands.exceptions.IllegalCommandExecutorException;
-import com.agonkolgeci.nexus_api.plugin.PluginAddon;
+import com.agonkolgeci.nexus.common.commands.CommandAdapter;
+import com.agonkolgeci.nexus.common.commands.exceptions.IllegalCommandExecutorException;
+import com.agonkolgeci.nexus.plugin.AbstractAddon;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -12,9 +12,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collections;
 import java.util.List;
 
-public class SpawnCommand extends PluginAddon<SpawnController> implements  CommandAdapter {
+public class SpawnCommand extends AbstractAddon<SpawnManager> implements  CommandAdapter {
 
-    public SpawnCommand(@NotNull SpawnController module) {
+    public SpawnCommand(@NotNull SpawnManager module) {
         super(module);
     }
 
@@ -23,7 +23,7 @@ public class SpawnCommand extends PluginAddon<SpawnController> implements  Comma
         if(!(sender instanceof Player)) throw new IllegalCommandExecutorException();
 
         @NotNull final Player player = (Player) sender;
-        player.teleport(module.getCenter());
+        module.teleportPlayer(player);
 
         return true;
     }

@@ -1,13 +1,13 @@
 package com.agonkolgeci.nexus_hub.core.ads;
 
+import com.agonkolgeci.nexus.common.config.ConfigSection;
+import com.agonkolgeci.nexus.plugin.AbstractAddon;
+import com.agonkolgeci.nexus.plugin.PluginAdapter;
+import com.agonkolgeci.nexus.plugin.PluginScheduler;
+import com.agonkolgeci.nexus.utils.objects.ObjectUtils;
+import com.agonkolgeci.nexus.utils.objects.list.CircularQueue;
+import com.agonkolgeci.nexus.utils.render.MessageUtils;
 import com.agonkolgeci.nexus_hub.core.players.HubPlayer;
-import com.agonkolgeci.nexus_api.common.config.ConfigSection;
-import com.agonkolgeci.nexus_api.plugin.PluginAddon;
-import com.agonkolgeci.nexus_api.plugin.PluginController;
-import com.agonkolgeci.nexus_api.plugin.PluginScheduler;
-import com.agonkolgeci.nexus_api.utils.objects.ObjectUtils;
-import com.agonkolgeci.nexus_api.utils.objects.list.CircularQueue;
-import com.agonkolgeci.nexus_api.utils.render.MessageUtils;
 import lombok.Getter;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-public class AdsBossBar extends PluginAddon<AdsController> implements PluginController, PluginScheduler {
+public class AdsBossBar extends AbstractAddon<AdsManager> implements PluginAdapter, PluginScheduler {
 
     @NotNull private final ConfigSection configuration;
 
@@ -36,7 +36,7 @@ public class AdsBossBar extends PluginAddon<AdsController> implements PluginCont
     @NotNull private final List<HubPlayer> targetAudiences;
 
 
-    public AdsBossBar(@NotNull AdsController module, @NotNull ConfigSection configuration) {
+    public AdsBossBar(@NotNull AdsManager module, @NotNull ConfigSection configuration) {
         super(module);
 
         this.configuration = configuration;
@@ -52,7 +52,7 @@ public class AdsBossBar extends PluginAddon<AdsController> implements PluginCont
     }
 
     @Override
-    public void load() {
+    public void load() throws Exception {
         if(messages.isEmpty()) {
             module.getLogger().warning("There are no messages configured for ads in the bossBar.");
         }

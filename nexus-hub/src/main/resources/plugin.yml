@@ -6,9 +6,7 @@ author: Agon KOLGECI
 load: POSTWORLD
 main: com.agonkolgeci.nexus_hub.NexusHubBootstrap
 
-depend: [ Nexus-SpigotAPI ]
-
-softdepend: [ UltraCosmetics ]
+depend: [ Nexus-API ]
 
 commands:
   spawn:
