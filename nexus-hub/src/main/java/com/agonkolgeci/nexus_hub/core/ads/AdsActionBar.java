@@ -1,13 +1,13 @@
 package com.agonkolgeci.nexus_hub.core.ads;
 
-import com.agonkolgeci.nexus.plugin.PluginAdapter;
-import com.agonkolgeci.nexus_hub.core.players.HubPlayer;
 import com.agonkolgeci.nexus.common.config.ConfigSection;
 import com.agonkolgeci.nexus.plugin.AbstractAddon;
+import com.agonkolgeci.nexus.plugin.PluginAdapter;
 import com.agonkolgeci.nexus.plugin.PluginScheduler;
 import com.agonkolgeci.nexus.utils.objects.ObjectUtils;
 import com.agonkolgeci.nexus.utils.objects.list.CircularQueue;
 import com.agonkolgeci.nexus.utils.render.MessageUtils;
+import com.agonkolgeci.nexus_hub.core.players.HubPlayer;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -23,8 +23,8 @@ public class AdsActionBar extends AbstractAddon<AdsManager> implements PluginAda
 
     @NotNull private final ConfigSection configuration;
 
-    private final double delay;
-    private final double period;
+    private final int delay;
+    private final int period;
 
     @NotNull private final CircularQueue<String> messages;
 
@@ -68,16 +68,16 @@ public class AdsActionBar extends AbstractAddon<AdsManager> implements PluginAda
         if(isRunning()) throw new TaskRunningException();
 
         return this.currentTask = new BukkitRunnable() {
-            private final long interval = ObjectUtils.retrieveTicks(period);
-            private long ticks = 0;
+            private final int interval = period;
+            private int seconds = 0;
 
             @Nullable Component currentMessage;
 
             @Override
             public void run() {
-                if(ticks == 0) {
+                if(seconds == 0) {
                     currentMessage = MessageUtils.MM_SERIALIZER.deserializeOrNull(messages.next());
-                    ticks = interval;
+                    seconds = interval;
                 }
 
                 if(currentMessage == null) {
@@ -88,9 +88,9 @@ public class AdsActionBar extends AbstractAddon<AdsManager> implements PluginAda
 
                 targetAudiences.forEach(playerCache -> playerCache.getAudience().sendActionBar(currentMessage));
 
-                ticks--;
+                seconds--;
             }
-        }.runTaskTimer(module.getPlugin(), ObjectUtils.retrieveTicks(delay), 1);
+        }.runTaskTimer(module.getPlugin(), ObjectUtils.retrieveTicks(delay), ObjectUtils.retrieveTicks(1));
     }
 
     @Override

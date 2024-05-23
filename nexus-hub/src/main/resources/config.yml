@@ -16,8 +16,8 @@ spawn:
 
 ads:
   boss-bar:
-    delay: 0.0
-    period: 20.0
+    delay: 0
+    period: 20
 
     color: YELLOW
     overlay: PROGRESS
@@ -27,11 +27,12 @@ ads:
       - "<green>Retrouvez tout sur GitHub: <dark_green>github.com/agonkolgeci"
 
   action-bar:
-    delay: 0.0
-    period: 0.1
+    delay: 0
+    period: 1
 
     messages:
       - "<b><yellow>nexus.agonkolgeci.com"
+      - "<b><gold>nexus.agonkolgeci.com"
 
 jumps:
   'Parcours du ciel':

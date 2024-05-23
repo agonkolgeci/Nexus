@@ -50,7 +50,6 @@ public final class NexusHub extends AbstractPlugin {
     @Override
     public void load() throws Exception {
         databaseManager.load();
-
         playersController.load();
 
         utilitiesManager.load();

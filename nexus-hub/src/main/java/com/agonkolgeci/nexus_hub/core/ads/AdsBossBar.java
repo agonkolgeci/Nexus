@@ -24,8 +24,8 @@ public class AdsBossBar extends AbstractAddon<AdsManager> implements PluginAdapt
 
     @NotNull private final ConfigSection configuration;
 
-    private final double delay;
-    private final double period;
+    private final int delay;
+    private final int period;
 
     @NotNull private final CircularQueue<String> messages;
 
@@ -34,7 +34,6 @@ public class AdsBossBar extends AbstractAddon<AdsManager> implements PluginAdapt
     @Nullable private BukkitTask currentTask;
 
     @NotNull private final List<HubPlayer> targetAudiences;
-
 
     public AdsBossBar(@NotNull AdsManager module, @NotNull ConfigSection configuration) {
         super(module);
@@ -74,14 +73,14 @@ public class AdsBossBar extends AbstractAddon<AdsManager> implements PluginAdapt
         if(isRunning()) throw new TaskRunningException();
 
         return this.currentTask = new BukkitRunnable() {
-            private final long interval = ObjectUtils.retrieveTicks(period);
-            private long ticks = 0;
+            private final int interval = period;
+            private int seconds = 0;
 
             @Nullable Component currentMessage;
 
             @Override
             public void run() {
-                if(ticks == 0) {
+                if(seconds == 0) {
                     currentMessage = MessageUtils.MM_SERIALIZER.deserializeOrNull(messages.next());
                     if(currentMessage == null) {
                         stop();
@@ -91,14 +90,14 @@ public class AdsBossBar extends AbstractAddon<AdsManager> implements PluginAdapt
 
                     bossBar.name(currentMessage);
 
-                    ticks = interval;
+                    seconds = interval;
                 }
 
-                bossBar.progress((float) ticks / interval);
+                bossBar.progress((float) seconds / interval);
 
-                ticks--;
+                seconds--;
             }
-        }.runTaskTimer(module.getPlugin(), ObjectUtils.retrieveTicks(delay), 1);
+        }.runTaskTimer(module.getPlugin(), ObjectUtils.retrieveTicks(delay), ObjectUtils.retrieveTicks(1));
     }
 
     @Override
