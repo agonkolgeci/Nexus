@@ -30,7 +30,7 @@ public class DatabaseCredentials {
 
     @NotNull
     public String toURI() {
-        return "jdbc:mysql://" + host + ":" + port + "/" + name;
+        return String.format("jdbc:mysql://%s:%s/%s", host, port, name);
     }
 
     @NotNull
@@ -41,6 +41,19 @@ public class DatabaseCredentials {
         hikariConfig.setUsername(username);
         hikariConfig.setPassword(password);
         hikariConfig.setMaximumPoolSize(maxPoolSize);
+
+        hikariConfig.addDataSourceProperty("characterEncoding", "utf8");
+        hikariConfig.addDataSourceProperty("useUnicode","true");
+        hikariConfig.addDataSourceProperty("cachePrepStmts", "true");
+        hikariConfig.addDataSourceProperty("prepStmtCacheSize", "250");
+        hikariConfig.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+        hikariConfig.addDataSourceProperty("useServerPrepStmts", "true");
+        hikariConfig.addDataSourceProperty("useLocalSessionState", "true");
+        hikariConfig.addDataSourceProperty("rewriteBatchedStatements", "true");
+        hikariConfig.addDataSourceProperty("cacheResultSetMetadata", "true");
+        hikariConfig.addDataSourceProperty("cacheServerConfiguration", "true");
+        hikariConfig.addDataSourceProperty("elideSetAutoCommits", "true");
+        hikariConfig.addDataSourceProperty("maintainTimeStats", "false");
 
         return hikariConfig;
     }
