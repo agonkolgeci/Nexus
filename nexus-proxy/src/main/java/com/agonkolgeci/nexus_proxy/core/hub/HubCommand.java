@@ -20,7 +20,7 @@ public class HubCommand extends PluginAddon<HubsController> implements CommandAd
 
     @Override
     public @NotNull CommandMeta getCommandMeta(@NotNull CommandManager commandManager) {
-        return commandManager.metaBuilder("hub").aliases("lobby").plugin(this).build();
+        return commandManager.metaBuilder("hub").aliases("lobby").build();
     }
 
     @Override

@@ -20,7 +20,6 @@ import java.util.List;
 public class HubsController extends PluginModule implements PluginController<HubsController> {
 
     public static final String SERVER_NAME_PATTERN = "(?i)(hub|lobby)";
-    public static final ProtocolVersion SERVER_PROTOCOL_VERSION = ProtocolVersion.MINECRAFT_1_8;
 
     @NotNull private final List<RegisteredServer> servers;
 

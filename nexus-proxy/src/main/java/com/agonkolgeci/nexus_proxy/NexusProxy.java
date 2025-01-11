@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 @Getter
-@Plugin(id = "nexus-proxy", name = "Nexus-Proxy", version = "1.0-SNAPSHOT", authors = "Agon KOLGECI", url = "https://agonkolgeci.com/")
+@Plugin(id = "nexus-proxy", name = "Nexus- Proxy", version = "1.0-SNAPSHOT", authors = "Agon KOLGECI", url = "https://agonkolgeci.com/")
 public class NexusProxy {
 
     @Inject @NotNull private final ProxyServer proxy;
@@ -28,7 +28,7 @@ public class NexusProxy {
     @NotNull private final PlayersController playersController;
 
     @Inject
-    public NexusProxy(@NotNull ProxyServer proxy, @NotNull Logger logger) throws Exception {
+    public NexusProxy(@NotNull ProxyServer proxy, @NotNull Logger logger) {
         this.proxy = proxy;
         this.logger = logger;
 
@@ -41,23 +41,13 @@ public class NexusProxy {
 
     @Subscribe
     public void onProxyInitialization(@NotNull ProxyInitializeEvent event) {
-        try {
-            hubsController.load();
-            playersController.load();
-        } catch (Exception exception) {
-            this.shutdown(exception);
-        }
+        hubsController.load();
+        playersController.load();
     }
 
     @Subscribe
     public void onProxyShutdown(@NotNull ProxyShutdownEvent event) {
         playersController.unload();
         hubsController.unload();
-    }
-
-    public void shutdown(@NotNull Exception exception) {
-        logger.error(String.format("An critical error occurred while loading %s, you can find the complete stack trace below.", logger.getName()), exception);
-
-        proxy.shutdown();
     }
 }
