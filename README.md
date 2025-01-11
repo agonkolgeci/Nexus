@@ -10,14 +10,15 @@ This software is released under [GNU GPL version 3 license](LICENSE). You can do
 ## Nexus Proxy
 Nexus Proxy is the project that keeps the whole infrastructure running properly.
 
-> Software: [Velocity](https://papermc.io/downloads/velocity)
+> Software: [Velocity](https://papermc.io/software/velocity)
 
 ---
 
 ## Nexus API
 Nexus API is the project providing the abstract layer of the API used on game servers.
 
-> Software: [Spigot 1.8](https://www.spigotmc.org/)
+> Software: [Paper](https://papermc.io/software/paper)  
+> Version: 1.8+
 
 - Dependencies: [HikariCP](https://github.com/brettwooldridge/HikariCP), [Adventure API](https://github.com/KyoriPowered/adventure)
 - Requirements: [LuckPerms](https://github.com/LuckPerms/LuckPerms)
@@ -27,7 +28,8 @@ Nexus API is the project providing the abstract layer of the API used on game se
 ## Nexus Hub
 Nexus Hub is the project that welcomes players once they are connected to the infrastructure.
 
-> Software: [Spigot 1.8](https://www.spigotmc.org/)
+> Software: [Paper](https://papermc.io/software/paper)  
+> Version: 1.8+
 
 - Requirements: [Nexus API](#nexus-api)
 
@@ -36,7 +38,8 @@ Nexus Hub is the project that welcomes players once they are connected to the in
 ## Nexus Games
 Nexus Games is the project that lists all the mini-games available on the server. Some may not be displayed as they are under development.
 
-> Software: [Spigot](https://www.spigotmc.org/)
+> Software: depends  
+> Version: depends
 
 - [Randomized Rumble](https://github.com/agonkolgeci/RandomizedRumble)
 - [Dé à coudre](https://github.com/agonkolgeci/DeACoudre)
