@@ -1,4 +1,4 @@
-package com.agonkolgeci.nexus.common.messaging;
+package com.agonkolgeci.nexus.core.messaging;
 
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;

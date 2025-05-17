@@ -1,6 +1,7 @@
 package com.agonkolgeci.nexus;
 
 import com.agonkolgeci.nexus.core.holograms.HologramsManager;
+import com.agonkolgeci.nexus.core.messaging.MessagingManager;
 import com.agonkolgeci.nexus.core.players.PlayersManager;
 import com.agonkolgeci.nexus.core.servers.ServersManager;
 import com.agonkolgeci.nexus.core.stylizer.StylizerManager;
@@ -18,6 +19,7 @@ public final class NexusAPI extends AbstractPlugin {
 
     @NotNull private final PlayersManager playersManager;
     @NotNull private final ServersManager serversManager;
+    @NotNull private final MessagingManager messagingManager;
 
     @NotNull private final HologramsManager hologramsManager;
     @NotNull private final StylizerManager stylizerManager;
@@ -27,6 +29,7 @@ public final class NexusAPI extends AbstractPlugin {
 
         luckPerms = server.getServicesManager().load(LuckPerms.class);
 
+        messagingManager = new MessagingManager(this);
         playersManager = new PlayersManager(this);
         serversManager = new ServersManager(this);
 
@@ -40,6 +43,7 @@ public final class NexusAPI extends AbstractPlugin {
 
         playersManager.load();
         serversManager.load();
+        messagingManager.load();
 
         hologramsManager.load();
         stylizerManager.load();

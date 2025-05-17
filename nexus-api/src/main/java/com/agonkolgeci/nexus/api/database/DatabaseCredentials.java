@@ -37,6 +37,7 @@ public class DatabaseCredentials {
     public HikariConfig toHikariConfig() {
         @NotNull final HikariConfig hikariConfig = new HikariConfig();
 
+        hikariConfig.setDriverClassName("com.mysql.cj.jdbc.Driver");
         hikariConfig.setJdbcUrl(toURI());
         hikariConfig.setUsername(username);
         hikariConfig.setPassword(password);
