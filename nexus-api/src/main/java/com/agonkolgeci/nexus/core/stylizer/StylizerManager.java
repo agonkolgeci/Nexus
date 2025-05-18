@@ -4,8 +4,8 @@ import com.agonkolgeci.nexus.NexusAPI;
 import com.agonkolgeci.nexus.api.players.events.PlayerLogoutEvent;
 import com.agonkolgeci.nexus.api.players.events.PlayerReadyEvent;
 import com.agonkolgeci.nexus.core.players.NexusPlayer;
-import com.agonkolgeci.nexus.plugin.PluginManager;
 import com.agonkolgeci.nexus.plugin.PluginAdapter;
+import com.agonkolgeci.nexus.plugin.PluginManager;
 import com.agonkolgeci.nexus.utils.objects.ObjectUtils;
 import com.agonkolgeci.nexus.utils.render.MessageUtils;
 import lombok.Getter;
@@ -86,8 +86,8 @@ public class StylizerManager extends PluginManager<NexusAPI> implements PluginAd
 
             @NotNull final CachedMetaData cachedMetaData = group.getCachedData().getMetaData();
 
-            if(cachedMetaData.getPrefix() != null) team.setPrefix(LegacyComponentSerializer.legacySection().serialize(LegacyComponentSerializer.legacyAmpersand().deserialize(cachedMetaData.getPrefix())));
-            if(cachedMetaData.getSuffix() != null) team.setSuffix(LegacyComponentSerializer.legacySection().serialize(LegacyComponentSerializer.legacyAmpersand().deserialize(cachedMetaData.getSuffix())));
+            if(cachedMetaData.getPrefix() != null) team.prefix(LegacyComponentSerializer.legacySection().deserialize(cachedMetaData.getPrefix()));
+            if(cachedMetaData.getSuffix() != null) team.suffix(LegacyComponentSerializer.legacySection().deserialize(cachedMetaData.getSuffix()));
 
             this.teams.put(group, team);
         }
@@ -108,7 +108,7 @@ public class StylizerManager extends PluginManager<NexusAPI> implements PluginAd
 
         team.addEntry(nexusPlayer.getUsername());
 
-        nexusPlayer.getPlayer().setDisplayName(team.getPrefix() + nexusPlayer.getUsername() + team.getSuffix());
+        nexusPlayer.getPlayer().displayName(Component.empty().append(team.prefix()).append(nexusPlayer.getDisplayName()).append(team.suffix()));
     }
 
     public void unloadPlayer(@NotNull NexusPlayer nexusPlayer) {
@@ -123,7 +123,7 @@ public class StylizerManager extends PluginManager<NexusAPI> implements PluginAd
         @NotNull final Player player = event.getPlayer();
 
         @NotNull final Component format = Component.text()
-                .append(Component.text(player.getDisplayName()).colorIfAbsent(NamedTextColor.GRAY))
+                .append(player.displayName())
                 .appendSpace()
                 .append(Component.text(":"))
                 .appendSpace()

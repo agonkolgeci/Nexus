@@ -1,10 +1,9 @@
 package com.agonkolgeci.nexus_hub.core.utilities;
 
-import com.agonkolgeci.nexus_hub.core.players.HubPlayer;
 import com.agonkolgeci.nexus.common.commands.CommandAdapter;
 import com.agonkolgeci.nexus.common.commands.exceptions.IllegalCommandExecutorException;
 import com.agonkolgeci.nexus.plugin.AbstractAddon;
-import com.agonkolgeci.nexus.utils.render.MessageUtils;
+import com.agonkolgeci.nexus_hub.core.players.HubPlayer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.Command;
@@ -40,7 +39,7 @@ public class SpeedCommand extends AbstractAddon<UtilitiesManager> implements  Co
                     player.setWalkSpeed(speedValue);
                 }
 
-                MessageUtils.sendMessage(MessageUtils.Type.SUCCESS, module, hubPlayer.getAudience(), Component.text(String.format("Vous avez défini votre vitesse de %s à", player.isFlying() ? "vol" : "marche")).appendSpace().append(Component.text(speedTarget, NamedTextColor.YELLOW)).append(Component.text(".")));
+                hubPlayer.getPlayer().sendMessage(UtilitiesManager.MESSAGING.success(Component.text(String.format("Vous avez défini votre vitesse de %s à", player.isFlying() ? "vol" : "marche")).appendSpace().append(Component.text(speedTarget, NamedTextColor.YELLOW)).append(Component.text("."))));
 
                 return true;
             } catch (NumberFormatException exception) {

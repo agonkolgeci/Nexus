@@ -15,11 +15,11 @@ public class HubPlayer extends AbstractPlayerCache<NexusHub> {
 
     @Override
     protected void onReady() {
-        instance.getAll().sendMessage(Component.text(player.getDisplayName()).appendSpace().append(Component.text("vient de rejoindre le Hub !", NamedTextColor.GREEN)));
+        instance.getServer().sendMessage(Component.empty().append(player.displayName()).appendSpace().append(Component.text("vient de rejoindre le Hub !", NamedTextColor.GREEN)));
     }
 
     @Override
     protected void onLogout() {
-        instance.getAll().sendMessage(Component.text(player.getDisplayName()).appendSpace().append(Component.text("vient de quitter le Hub !", NamedTextColor.RED)));
+        instance.getServer().sendMessage(Component.empty().append(player.displayName()).appendSpace().append(Component.text("vient de quitter le Hub !", NamedTextColor.RED)));
     }
 }

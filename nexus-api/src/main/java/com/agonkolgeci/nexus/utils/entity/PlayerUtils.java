@@ -1,10 +1,9 @@
-package com.agonkolgeci.nexus.utils.render;
+package com.agonkolgeci.nexus.utils.entity;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.Map;
 
 public class PlayerUtils {

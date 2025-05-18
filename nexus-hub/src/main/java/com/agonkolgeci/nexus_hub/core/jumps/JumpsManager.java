@@ -5,7 +5,7 @@ import com.agonkolgeci.nexus.api.players.events.PlayerLogoutEvent;
 import com.agonkolgeci.nexus.common.config.ConfigSection;
 import com.agonkolgeci.nexus.plugin.PluginAdapter;
 import com.agonkolgeci.nexus.plugin.PluginManager;
-import com.agonkolgeci.nexus.utils.render.MessageUtils;
+import com.agonkolgeci.nexus.utils.ui.TextMessaging;
 import com.agonkolgeci.nexus.utils.world.ItemBuilder;
 import com.agonkolgeci.nexus_hub.NexusHub;
 import com.agonkolgeci.nexus_hub.core.jumps.components.JumpLocation;
@@ -33,7 +33,9 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 @Getter
-public class JumpsManager extends PluginManager<NexusHub> implements PluginAdapter, MessageUtils.Stylizable {
+public class JumpsManager extends PluginManager<NexusHub> implements PluginAdapter {
+
+    public static final TextMessaging MESSAGING = new TextMessaging("Parcours", NamedTextColor.YELLOW);
 
     @NotNull private final ConfigSection configuration;
 
@@ -51,14 +53,9 @@ public class JumpsManager extends PluginManager<NexusHub> implements PluginAdapt
 
         this.players = new HashMap<>();
         this.items = new HashMap<Integer, ItemStack>() {{
-            put(3, handleInteraction(new ItemBuilder<>(Material.IRON_PLATE).displayName(Component.text("Revenir au checkpoint", NamedTextColor.GREEN, TextDecoration.BOLD)).toItemStack(), JumpPlayer::back));
-            put(5, handleInteraction(new ItemBuilder<>(Material.BARRIER).displayName(Component.text("Quitter le jump", NamedTextColor.RED, TextDecoration.BOLD)).toItemStack(), JumpPlayer::leave));
+            put(3, handleInteraction(new ItemBuilder(Material.LIGHT_WEIGHTED_PRESSURE_PLATE).displayName(Component.text("Revenir au checkpoint", NamedTextColor.GREEN, TextDecoration.BOLD)).build(), JumpPlayer::back));
+            put(5, handleInteraction(new ItemBuilder(Material.BARRIER).displayName(Component.text("Quitter le jump", NamedTextColor.RED, TextDecoration.BOLD)).build(), JumpPlayer::leave));
         }};
-    }
-
-    @Override
-    public @NotNull Component getPrefix() {
-        return Component.text("Parcours", NamedTextColor.YELLOW);
     }
 
     @Override
@@ -151,8 +148,8 @@ public class JumpsManager extends PluginManager<NexusHub> implements PluginAdapt
         if(interactedBlock == null) return;
 
         switch (interactedBlock.getType()) {
-            case IRON_PLATE:
-            case GOLD_PLATE: {
+            case LIGHT_WEIGHTED_PRESSURE_PLATE:
+            case HEAVY_WEIGHTED_PRESSURE_PLATE: {
                 event.setCancelled(true);
                 event.setUseInteractedBlock(Event.Result.DENY);
 

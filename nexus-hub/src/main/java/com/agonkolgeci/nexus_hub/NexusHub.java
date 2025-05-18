@@ -11,11 +11,16 @@ import com.agonkolgeci.nexus_hub.core.jumps.JumpsManager;
 import com.agonkolgeci.nexus_hub.core.players.HubPlayersManager;
 import com.agonkolgeci.nexus_hub.core.spawn.SpawnManager;
 import com.agonkolgeci.nexus_hub.core.utilities.UtilitiesManager;
+import eu.decentsoftware.holograms.api.DecentHolograms;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
+
 @Getter
 public final class NexusHub extends AbstractPlugin {
+
+    @NotNull private final DecentHolograms decentHolograms;
 
     @NotNull private final ConfigManager configManager;
     @NotNull private final DatabaseManager databaseManager;
@@ -32,18 +37,20 @@ public final class NexusHub extends AbstractPlugin {
     public NexusHub(@NotNull AbstractBootstrap bootstrap) {
         super(bootstrap);
 
-        configManager = new ConfigManager(this);
-        databaseManager = new DatabaseManager(this, configManager.of("database"));
+        this.decentHolograms = Objects.requireNonNull(server.getServicesManager().getRegistration(DecentHolograms.class), "DecentHolograms is required.").getProvider();
 
-        playersController = new HubPlayersManager(this);
-        guiManager = new GuiManager(this);
-        interactionsManager = new InteractionsManager(this);
+        this.configManager = new ConfigManager(this);
+        this.databaseManager = new DatabaseManager(this, configManager.of("database"));
 
-        utilitiesManager = new UtilitiesManager(this);
+        this.playersController = new HubPlayersManager(this);
+        this.guiManager = new GuiManager(this);
+        this.interactionsManager = new InteractionsManager(this);
 
-        spawnManager = new SpawnManager(this, configManager.of("spawn"));
-        adsManager = new AdsManager(this, configManager.of("ads"));
-        jumpsManager = new JumpsManager(this, configManager.of("jumps"));
+        this.utilitiesManager = new UtilitiesManager(this);
+
+        this.spawnManager = new SpawnManager(this, configManager.of("spawn"));
+        this.adsManager = new AdsManager(this, configManager.of("ads"));
+        this.jumpsManager = new JumpsManager(this, configManager.of("jumps"));
     }
 
     @Override
@@ -59,8 +66,6 @@ public final class NexusHub extends AbstractPlugin {
 
     @Override
     public void unload() {
-        super.unload();
-
         databaseManager.unload();
         playersController.unload();
 

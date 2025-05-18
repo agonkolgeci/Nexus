@@ -1,24 +1,20 @@
 package com.agonkolgeci.nexus_hub.core.utilities;
 
 import com.agonkolgeci.nexus.plugin.PluginAdapter;
-import com.agonkolgeci.nexus_hub.NexusHub;
 import com.agonkolgeci.nexus.plugin.PluginManager;
-import com.agonkolgeci.nexus.utils.render.MessageUtils;
+import com.agonkolgeci.nexus.utils.ui.TextMessaging;
+import com.agonkolgeci.nexus_hub.NexusHub;
 import lombok.Getter;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 
 @Getter
-public class UtilitiesManager extends PluginManager<NexusHub> implements PluginAdapter, MessageUtils.Stylizable {
+public class UtilitiesManager extends PluginManager<NexusHub> implements PluginAdapter {
+
+    public static final TextMessaging MESSAGING = new TextMessaging("Utilitaires", NamedTextColor.GOLD);
 
     public UtilitiesManager(@NotNull NexusHub instance) {
         super(instance);
-    }
-
-    @Override
-    public @NotNull Component getPrefix() {
-        return Component.text("Utilitaires", NamedTextColor.GOLD);
     }
 
     @Override

@@ -109,12 +109,12 @@ public class AdsBossBar extends AbstractAddon<AdsManager> implements PluginAdapt
     }
 
     public void loadPlayer(@NotNull HubPlayer hubPlayer) {
-        hubPlayer.getAudience().showBossBar(bossBar);
+        hubPlayer.getPlayer().showBossBar(bossBar);
         targetAudiences.add(hubPlayer);
     }
 
     public void unloadPlayer(@NotNull HubPlayer hubPlayer) {
-        hubPlayer.getAudience().hideBossBar(bossBar);
+        hubPlayer.getPlayer().hideBossBar(bossBar);
         targetAudiences.remove(hubPlayer);
     }
 

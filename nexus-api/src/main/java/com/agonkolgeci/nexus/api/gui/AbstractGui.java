@@ -63,7 +63,7 @@ public abstract class AbstractGui<I extends AbstractPlugin> extends PluginManage
     protected void handleBackward(@NotNull AbstractGuiManager<I> guiManager, int slot) {
         if(parent == null) throw new IllegalStateException("This gui doesn't have parent interface !");
 
-        inventory.setItem(slot, handleInteraction(new ItemBuilder<>(Material.DARK_OAK_DOOR_ITEM).displayName(Component.text("Revenir en arrière", NamedTextColor.DARK_GRAY)).toItemStack(), (targetPlayer, itemStack, action, clickType, slot1) -> guiManager.openGui(targetPlayer, parent)));
+        inventory.setItem(slot, handleInteraction(new ItemBuilder(Material.DARK_OAK_DOOR).displayName(Component.text("Revenir en arrière", NamedTextColor.DARK_GRAY)).build(), (targetPlayer, itemStack, action, clickType, slot1) -> guiManager.openGui(targetPlayer, parent)));
     }
 
 }

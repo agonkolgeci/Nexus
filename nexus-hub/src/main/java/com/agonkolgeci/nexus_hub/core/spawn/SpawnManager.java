@@ -7,7 +7,7 @@ import com.agonkolgeci.nexus.common.config.ConfigSection;
 import com.agonkolgeci.nexus.common.config.ConfigUtils;
 import com.agonkolgeci.nexus.plugin.PluginAdapter;
 import com.agonkolgeci.nexus.plugin.PluginManager;
-import com.agonkolgeci.nexus.utils.render.PlayerUtils;
+import com.agonkolgeci.nexus.utils.entity.PlayerUtils;
 import com.agonkolgeci.nexus.utils.world.ItemBuilder;
 import com.agonkolgeci.nexus_hub.NexusHub;
 import com.agonkolgeci.nexus_hub.core.gui.main.GuiMain;
@@ -61,7 +61,7 @@ public class SpawnManager extends PluginManager<NexusHub> implements PluginAdapt
         this.center = ConfigUtils.retrieveLocation(world, configuration.of("center"));
 
         this.items = new HashMap<Integer, ItemStack>() {{
-            put(4, instance.getInteractionsManager().handle(new ItemBuilder<>(Material.COMPASS).displayName(Component.text("Menu Principal", NamedTextColor.GREEN, TextDecoration.BOLD)).toItemStack(), (PlayerItemInteractCallback) (player, itemStack) -> instance.getGuiManager().openGui(player, new GuiMain(instance))));
+            put(4, instance.getInteractionsManager().handle(new ItemBuilder(Material.COMPASS).displayName(Component.text("Menu Principal", NamedTextColor.GREEN, TextDecoration.BOLD)).build(), (PlayerItemInteractCallback) (player, itemStack) -> instance.getGuiManager().openGui(player, new GuiMain(instance))));
         }};
     }
 

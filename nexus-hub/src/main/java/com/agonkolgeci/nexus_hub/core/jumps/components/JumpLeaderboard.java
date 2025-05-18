@@ -1,24 +1,26 @@
 package com.agonkolgeci.nexus_hub.core.jumps.components;
 
-import com.agonkolgeci.nexus_hub.core.jumps.JumpManager;
-import com.agonkolgeci.nexus_hub.core.jumps.JumpsManager;
-import com.agonkolgeci.nexus.NexusAPI;
 import com.agonkolgeci.nexus.common.config.ConfigSection;
 import com.agonkolgeci.nexus.common.config.ConfigUtils;
-import com.agonkolgeci.nexus.core.holograms.Hologram;
 import com.agonkolgeci.nexus.plugin.AbstractAddon;
-import com.agonkolgeci.nexus.utils.objects.ObjectUtils;
 import com.agonkolgeci.nexus.utils.render.MessageUtils;
+import com.agonkolgeci.nexus_hub.core.jumps.JumpManager;
+import com.agonkolgeci.nexus_hub.core.jumps.JumpsManager;
+import eu.decentsoftware.holograms.api.DHAPI;
+import eu.decentsoftware.holograms.api.holograms.Hologram;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Getter
 public class JumpLeaderboard extends AbstractAddon<JumpsManager> {
@@ -27,8 +29,7 @@ public class JumpLeaderboard extends AbstractAddon<JumpsManager> {
     @NotNull private final ConfigSection configuration;
 
     @NotNull private final Location location;
-    @NotNull private final Component title;
-    @NotNull private final Hologram.Direction direction;
+    @NotNull private final String title;
 
     private final int limit;
 
@@ -41,36 +42,32 @@ public class JumpLeaderboard extends AbstractAddon<JumpsManager> {
         this.configuration = configuration;
 
         this.location = ConfigUtils.retrieveLocation(jumpManager.getWorld(), configuration.of("location"));
-        this.title = MessageUtils.MM_SERIALIZER.deserialize(configuration.require("title"));
-        this.direction = ObjectUtils.fetchObject(Hologram.Direction.class, configuration.get("direction"), Hologram.Direction.DOWN);
+        this.title = LegacyComponentSerializer.legacyAmpersand().serialize(MessageUtils.MM_SERIALIZER.deserialize(configuration.require("title")));
 
         this.limit = configuration.require("limit");
 
-        this.hologram = NexusAPI.getInstance().getHologramsManager().create(location, title, direction);
+        this.hologram = DHAPI.createHologram(title, location);
     }
 
     public void update() {
-        hologram.clearLines();
-
         @NotNull final LinkedHashMap<OfflinePlayer, Integer> records = jumpManager.retrieveRecords(limit);
         if(!records.isEmpty()) {
             int position = 1;
-            for(@NotNull final Map.Entry<OfflinePlayer, Integer> entry : records.entrySet()) {
-                hologram.addLine(Component.text()
-                        .append(Component.text(position+".", NamedTextColor.YELLOW, TextDecoration.BOLD))
-                        .appendSpace()
-                        .append(Component.text(entry.getKey().getName(), NamedTextColor.WHITE))
-                        .appendSpace()
-                        .append(Component.text("-", NamedTextColor.GRAY))
-                        .appendSpace()
-                        .append(module.retrieveTimer(entry.getValue()))
-                        .build()
+            DHAPI.setHologramLines(hologram, records.entrySet().stream().map(entry -> {
+                return LegacyComponentSerializer.legacyAmpersand().serialize(
+                        Component.text()
+                                .append(Component.text(position+".", NamedTextColor.YELLOW, TextDecoration.BOLD))
+                                .appendSpace()
+                                .append(Component.text(Objects.requireNonNull(entry.getKey().getName()), NamedTextColor.WHITE))
+                                .appendSpace()
+                                .append(Component.text("-", NamedTextColor.GRAY))
+                                .appendSpace()
+                                .append(module.retrieveTimer(entry.getValue()))
+                                .build()
                 );
-
-                position++;
-            }
+            }).collect(Collectors.toList()));
         } else {
-            hologram.addLine(Component.text("Aucun score", NamedTextColor.GRAY));
+            DHAPI.setHologramLines(hologram, List.of(LegacyComponentSerializer.legacyAmpersand().serialize(Component.text("Aucun score", NamedTextColor.GRAY))));
         }
     }
 

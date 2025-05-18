@@ -1,4 +1,4 @@
-package com.agonkolgeci.nexus.utils.render;
+package com.agonkolgeci.nexus.utils.world;
 
 import com.agonkolgeci.nexus.utils.objects.ObjectUtils;
 import org.bukkit.FireworkEffect;
@@ -21,7 +21,7 @@ public class EffectsUtils {
             @Nullable final World world = location.getWorld();
             if(world == null) return;
 
-            @NotNull final Firework firework = (Firework) world.spawnEntity(randomLocation, EntityType.FIREWORK);
+            @NotNull final Firework firework = (Firework) world.spawnEntity(randomLocation, EntityType.FIREWORK_ROCKET);
             @NotNull final FireworkMeta fireworkMeta = firework.getFireworkMeta();
 
             fireworkMeta.setPower(ObjectUtils.SPLITTABLE_RANDOM.nextInt(1, 2));

@@ -86,7 +86,7 @@ public class AdsActionBar extends AbstractAddon<AdsManager> implements PluginAda
                     return;
                 }
 
-                targetAudiences.forEach(playerCache -> playerCache.getAudience().sendActionBar(currentMessage));
+                targetAudiences.forEach(playerCache -> playerCache.getPlayer().sendActionBar(currentMessage));
 
                 seconds--;
             }

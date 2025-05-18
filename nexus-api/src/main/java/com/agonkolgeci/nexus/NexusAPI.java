@@ -1,6 +1,5 @@
 package com.agonkolgeci.nexus;
 
-import com.agonkolgeci.nexus.core.holograms.HologramsManager;
 import com.agonkolgeci.nexus.core.messaging.MessagingManager;
 import com.agonkolgeci.nexus.core.players.PlayersManager;
 import com.agonkolgeci.nexus.core.servers.ServersManager;
@@ -9,6 +8,8 @@ import lombok.Getter;
 import net.luckperms.api.LuckPerms;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 @Getter
 public final class NexusAPI extends AbstractPlugin {
@@ -21,20 +22,18 @@ public final class NexusAPI extends AbstractPlugin {
     @NotNull private final ServersManager serversManager;
     @NotNull private final MessagingManager messagingManager;
 
-    @NotNull private final HologramsManager hologramsManager;
     @NotNull private final StylizerManager stylizerManager;
 
     public NexusAPI(@NotNull JavaPlugin plugin) {
         super(plugin);
 
-        luckPerms = server.getServicesManager().load(LuckPerms.class);
+        this.luckPerms = Objects.requireNonNull(server.getServicesManager().getRegistration(LuckPerms.class), "LuckPerms is required.").getProvider();
 
-        messagingManager = new MessagingManager(this);
-        playersManager = new PlayersManager(this);
-        serversManager = new ServersManager(this);
+        this.messagingManager = new MessagingManager(this);
+        this.playersManager = new PlayersManager(this);
+        this.serversManager = new ServersManager(this);
 
-        hologramsManager = new HologramsManager(this);
-        stylizerManager = new StylizerManager(this);
+        this.stylizerManager = new StylizerManager(this);
     }
 
     @Override
@@ -45,18 +44,14 @@ public final class NexusAPI extends AbstractPlugin {
         serversManager.load();
         messagingManager.load();
 
-        hologramsManager.load();
         stylizerManager.load();
     }
 
     @Override
     public void unload() {
-        super.unload();
-
         playersManager.unload();
         serversManager.unload();
 
-        hologramsManager.unload();
         stylizerManager.unload();
     }
 

@@ -1,386 +1,331 @@
 package com.agonkolgeci.nexus.utils.world;
 
-import com.agonkolgeci.nexus.utils.objects.ObjectUtils;
+import com.destroystokyo.paper.profile.PlayerProfile;
+import com.destroystokyo.paper.profile.ProfileProperty;
+import com.google.common.collect.Lists;
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.CustomModelData;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import org.bukkit.FireworkEffect;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.block.CreatureSpawner;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.*;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.potion.PotionEffect;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 
-@SuppressWarnings("unchecked")
-public class ItemBuilder<B extends ItemBuilder<B>> {
+public class ItemBuilder {
 
     public static final Component ANY_CLICK = Component.text("Clic", NamedTextColor.GREEN);
     public static final Component LEFT_CLICK = Component.text("Clic-gauche", NamedTextColor.YELLOW);
     public static final Component RIGHT_CLICK = Component.text("Clic-droit", NamedTextColor.YELLOW);
 
-    @NotNull private final ItemStack itemStack;
-
     @Getter @Nullable private Component flag;
-
     @Getter @NotNull private final List<Component> tags;
-    @Getter @NotNull private final List<Component> actions;
+    @Getter @NotNull private final Map<Component, Component> properties;
+    @Getter @NotNull private final Map<Component, Component> actions;
+
+    @NotNull private ItemStack itemStack;
 
     public ItemBuilder(@NotNull ItemStack itemStack) {
         this.itemStack = itemStack;
 
         this.tags = new ArrayList<>();
-        this.actions = new ArrayList<>();
+        this.properties = new HashMap<>();
+        this.actions = new HashMap<>();
     }
 
     public ItemBuilder(@NotNull Material material) {
         this(new ItemStack(material));
     }
 
-    public ItemBuilder(@NotNull Material material, int amount) {
-        this(new ItemStack(material, amount));
-    }
-
     public ItemBuilder(@NotNull Material material, int amount, short data) {
         this(new ItemStack(material, amount, data));
     }
 
-    @NotNull
-    public ItemStack toItemStack() {
-        @NotNull final ItemStack generatedItemStack = itemStack.clone();
+    public @NotNull ItemStack build() {
+        @NotNull final ItemStack itemStack = this.build();
 
-        @Nullable final ItemMeta generatedItemMeta = generatedItemStack.getItemMeta();
-        if(generatedItemMeta == null) return generatedItemStack;
+        @Nullable final ItemMeta itemMeta = itemStack.getItemMeta();
+        if(itemMeta == null) return itemStack;
 
-        @NotNull final List<Component> generatedItemLore = new ArrayList<>();
+        @NotNull final List<Component> lore = new ArrayList<>();
 
-        if(flag != null) {
-            generatedItemMeta.setDisplayName(LegacyComponentSerializer.legacySection().serialize(ObjectUtils.requireNonNullElse(LegacyComponentSerializer.legacySection().deserialize(generatedItemMeta.getDisplayName()), Component.empty()).appendSpace().append(flag.colorIfAbsent(NamedTextColor.WHITE)).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)));
-        }
+        if(flag != null) itemMeta.displayName(displayName().appendSpace().append(flag));
 
         if(!tags.isEmpty()) {
-            generatedItemLore.addAll(tags.stream().map(Component::appendSpace).collect(Collectors.toList()));
-            generatedItemLore.add(Component.empty());
+            lore.addAll(Lists.reverse(tags));
         }
 
-        if(generatedItemMeta.hasLore()) {
-            generatedItemLore.addAll(generatedItemMeta.getLore().stream().map(line -> LegacyComponentSerializer.legacySection().deserialize(line)).collect(Collectors.toList()));
+        if(itemMeta.hasLore()) {
+            lore.addAll(Objects.requireNonNull(itemMeta.lore()));
+        }
+
+        if(!properties.isEmpty()) {
+            lore.add(Component.empty());
+            lore.addAll(properties.entrySet().stream().map(e -> Component.empty().append(Component.text("•", NamedTextColor.DARK_GRAY)).appendSpace().append(e.getKey().colorIfAbsent(NamedTextColor.GRAY)).append(Component.text(":", NamedTextColor.GRAY)).appendSpace().append(e.getValue().colorIfAbsent(NamedTextColor.WHITE))).toList());
         }
 
         if(!actions.isEmpty()) {
-            generatedItemLore.add(Component.empty());
-            generatedItemLore.addAll(actions);
+            lore.add(Component.empty());
+            lore.addAll(actions.entrySet().stream().map(e -> Component.empty().append(e.getKey().colorIfAbsent(NamedTextColor.WHITE)).appendSpace().append(Component.text("•", NamedTextColor.DARK_GRAY)).appendSpace().append(e.getValue().colorIfAbsent(NamedTextColor.GRAY))).toList());
         }
 
-        if(!generatedItemLore.isEmpty()) {
-            generatedItemMeta.setLore(generatedItemLore.stream().map(line -> LegacyComponentSerializer.legacySection().serialize(line)).collect(Collectors.toList()));
-        }
-
-        generatedItemStack.setItemMeta(generatedItemMeta);
-
-        return generatedItemStack;
-    }
-
-    @NotNull
-    public B amount(final int amount) {
-        itemStack.setAmount(amount);
-        return (B) this;
-    }
-
-    @NotNull
-    public B type(@NotNull Material material) {
-        itemStack.setType(material);
-        return (B) this;
-    }
-
-    @NotNull
-    public B itemMeta(@NotNull ItemMeta itemMeta) {
+        itemMeta.lore(lore);
         itemStack.setItemMeta(itemMeta);
-        return (B) this;
+
+        return new ItemStack(itemStack);
     }
 
-    @Nullable
-    public Component displayName() {
+    public @NotNull ItemBuilder flag(@NotNull Component flag) {
+        this.flag = flag;
+        return this;
+    }
+
+    public @NotNull ItemBuilder addTag(@NotNull Component tag) {
+        this.tags.add(tag);
+        return this;
+    }
+
+    public @NotNull ItemBuilder addProperty(@NotNull Component name, @NotNull Component value) {
+        this.properties.put(name, value);
+
+        return this;
+    }
+
+    public @NotNull ItemBuilder addAction(@NotNull Component icon, @NotNull Component action) {
+        this.actions.put(icon, action);
+        return this;
+    }
+
+    public @NotNull ItemBuilder addAction(@NotNull String icon, @NotNull Component action) {
+        this.actions.put(Component.text(icon, NamedTextColor.WHITE), action);
+        return this;
+    }
+
+    public @NotNull ItemBuilder amount(int amount) {
+        itemStack.setAmount(amount);
+        return this;
+    }
+
+    public @NotNull ItemBuilder type(@NotNull Material category) {
+        itemStack = itemStack.withType(category);
+        return this;
+    }
+
+    public @NotNull ItemBuilder material(@NotNull Material material) {
+        return type(material);
+    }
+
+    public @NotNull ItemBuilder meta(@NotNull ItemMeta itemMeta) {
+        itemStack.setItemMeta(itemMeta);
+        return this;
+    }
+
+    public @NotNull ItemBuilder displayName(@NotNull Component displayName) {
         @Nullable final ItemMeta itemMeta = itemStack.getItemMeta();
-        if(itemMeta == null) return null;
+        if(itemMeta == null) return this;
 
-        return LegacyComponentSerializer.legacySection().deserialize(itemMeta.getDisplayName());
+        itemMeta.displayName(displayName);
+
+        return this.meta(itemMeta);
     }
 
-    @NotNull
-    public B displayName(@NotNull Component displayName) {
+    public @NotNull Component displayName() {
         @Nullable final ItemMeta itemMeta = itemStack.getItemMeta();
-        if(itemMeta == null) return (B) this;
+        if(itemMeta == null) throw new IllegalStateException("Item meta is null !");
 
-        itemMeta.setDisplayName(LegacyComponentSerializer.legacySection().serialize(displayName.colorIfAbsent(NamedTextColor.GRAY).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)));
-
-        return this.itemMeta(itemMeta);
+        return Objects.requireNonNullElse(itemMeta.displayName(), itemMeta.itemName());
     }
 
-    @Nullable
-    public List<Component> lore() {
+    public @NotNull ItemBuilder lore(@NotNull List<Component> lines) {
         @Nullable final ItemMeta itemMeta = itemStack.getItemMeta();
-        if(itemMeta == null) return null;
-        if(!itemMeta.hasLore()) return new ArrayList<>();
+        if(itemMeta == null) return this;
 
-        return itemMeta.getLore().stream().map(line -> LegacyComponentSerializer.legacySection().deserialize(line)).collect(Collectors.toList());
+        itemMeta.lore(lines);
+
+        return this.meta(itemMeta);
     }
 
-    @NotNull
-    public B lore(@NotNull List<Component> lines) {
-        @Nullable final ItemMeta itemMeta = itemStack.getItemMeta();
-        if(itemMeta == null) return (B) this;
-
-        itemMeta.setLore(lines.stream().map(line -> LegacyComponentSerializer.legacySection().serialize(line.colorIfAbsent(NamedTextColor.GRAY).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE))).collect(Collectors.toList()));
-
-        return this.itemMeta(itemMeta);
-    }
-
-    @NotNull
-    public B lore(@NotNull Component... lines) {
+    public @NotNull ItemBuilder lore(@NotNull Component... lines) {
         return lore(Arrays.asList(lines));
     }
 
-    @NotNull
-    public B flag(@NotNull Component flag) {
-        this.flag = flag.decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE);
-
-        return (B) this;
-    }
-
-    @NotNull
-    public B addTag(@NotNull Component tag) {
-        this.tags.add(tag.decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE));
-
-        return (B) this;
-    }
-
-    @NotNull
-    public B addProperty(@NotNull Component displayName, @NotNull Component value) {
-        this.addLore(
-                Component.text("•", NamedTextColor.DARK_GRAY)
-                        .appendSpace()
-                        .append(displayName.append(Component.text(":")).colorIfAbsent(NamedTextColor.GRAY))
-                        .appendSpace()
-                        .append(value.colorIfAbsent(NamedTextColor.WHITE))
-                        .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
-        );
-
-        return (B) this;
-    }
-
-    @NotNull
-    public B addAction(@NotNull Component icon, @NotNull Component description) {
-        this.actions.add(
-                icon.colorIfAbsent(NamedTextColor.WHITE)
-                        .appendSpace()
-                        .append(Component.text("•", NamedTextColor.DARK_GRAY))
-                        .appendSpace()
-                        .append(description.colorIfAbsent(NamedTextColor.GRAY))
-                        .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
-        );
-
-        return (B) this;
-    }
-
-    @NotNull
-    public B addLore(@NotNull List<Component> lines) {
+    public @NotNull List<Component> getLore() {
         @Nullable final ItemMeta itemMeta = itemStack.getItemMeta();
-        if(itemMeta == null) return (B) this;
+        if(itemMeta == null) return new ArrayList<>();
 
-        @NotNull final List<Component> newLore = ObjectUtils.requireNonNullElse(lore(), new ArrayList<>());
-
-        newLore.addAll(lines);
-
-        return this.lore(newLore);
+        return Objects.requireNonNullElse(itemMeta.lore(), new ArrayList<>());
     }
 
-    @NotNull
-    public B addLore(@NotNull Component... lines) {
+    public @NotNull ItemBuilder addLore(@NotNull List<Component> lines) {
+        @Nullable final ItemMeta itemMeta = itemStack.getItemMeta();
+        if(itemMeta == null) return this;
+
+        @NotNull final List<Component> lore = this.getLore();
+
+        lore.addAll(lines);
+        itemMeta.lore(lore);
+
+        return this.meta(itemMeta);
+    }
+
+    public @NotNull ItemBuilder addLore(@NotNull Component... lines) {
         return addLore(Arrays.asList(lines));
     }
 
-    @NotNull
-    public B addEmptyLore() {
-        return addLore(Component.empty());
+    public @NotNull ItemBuilder damage(final int damage) {
+        @Nullable final ItemMeta itemMeta = itemStack.getItemMeta();
+        if(itemMeta == null) return this;
+
+        if(!(itemMeta instanceof @NotNull Damageable damageableMeta)) return this;
+
+        damageableMeta.setDamage(damage);
+
+        return this.meta(damageableMeta);
     }
 
-    @NotNull
-    public B addEnchantments(@NotNull HashMap<Enchantment, Integer> enchantmentLevelsMap, boolean ignoreLevelRestriction) {
+    public @NotNull ItemBuilder enchantments(@NotNull HashMap<Enchantment, Integer> enchantmentLevelsMap, boolean ignoreLevelRestriction) {
         @Nullable final ItemMeta itemMeta = itemStack.getItemMeta();
-        if(itemMeta == null) return (B) this;
+        if(itemMeta == null) return this;
 
         enchantmentLevelsMap.forEach(((enchantment, level) -> itemMeta.addEnchant(enchantment, level, ignoreLevelRestriction)));
 
-        return this.itemMeta(itemMeta);
+        return this.meta(itemMeta);
     }
 
-    @NotNull
-    public B addEnchantment(@NotNull Enchantment enchantment, final int level) {
-        itemStack.addEnchantment(enchantment, level);
-
-        return (B) this;
-    }
-
-    @NotNull
-    public B addUnsafeEnchantment(@NotNull Enchantment enchantment, final int level) {
-        itemStack.addUnsafeEnchantment(enchantment, level);
-
-        return (B) this;
-    }
-
-    @NotNull
-    public B removeEnchantment(@NotNull Enchantment enchantment) {
+    public @NotNull ItemBuilder addEnchantment(@NotNull Enchantment enchantment, final int level, boolean ignoreLevelRestriction) {
         @Nullable final ItemMeta itemMeta = itemStack.getItemMeta();
-        if(itemMeta == null) return (B) this;
+        if(itemMeta == null) return this;
+
+        itemMeta.addEnchant(enchantment, level, ignoreLevelRestriction);
+
+        return this.meta(itemMeta);
+    }
+
+    public @NotNull ItemBuilder removeEnchantment(@NotNull Enchantment enchantment) {
+        @Nullable final ItemMeta itemMeta = itemStack.getItemMeta();
+        if(itemMeta == null) return this;
 
         itemMeta.removeEnchant(enchantment);
 
-        return this.itemMeta(itemMeta);
+        return this.meta(itemMeta);
     }
 
-    @NotNull
-    public B addItemFlags(@NotNull ItemFlag... itemFlags) {
+    public @NotNull ItemBuilder addItemFlags(@NotNull ItemFlag... itemFlags) {
         @Nullable final ItemMeta itemMeta = itemStack.getItemMeta();
-        if(itemMeta == null) return (B) this;
+        if(itemMeta == null) return this;
 
         itemMeta.addItemFlags(itemFlags);
 
-        return this.itemMeta(itemMeta);
+        return this.meta(itemMeta);
     }
 
-    @NotNull
-    public B addItemFlags(@NotNull List<ItemFlag> itemFlags) {
-        return this.addItemFlags(itemFlags.toArray(new ItemFlag[0]));
+    public @NotNull ItemBuilder addItemFlags(@NotNull List<ItemFlag> itemFlags) {
+        return addItemFlags(itemFlags.toArray(new ItemFlag[0]));
     }
 
-    @NotNull
-    public B removeItemFlags(@NotNull ItemFlag... itemFlags) {
+    public @NotNull ItemBuilder removeItemFlags(@NotNull ItemFlag... itemFlags) {
         @Nullable final ItemMeta itemMeta = itemStack.getItemMeta();
-        if(itemMeta == null) return (B) this;
+        if(itemMeta == null) return this;
 
         itemMeta.removeItemFlags(itemFlags);
 
-        return this.itemMeta(itemMeta);
+        return this.meta(itemMeta);
     }
 
-    @NotNull
-    public B removeItemFlags(@NotNull List<ItemFlag> itemFlags) {
-        return this.removeItemFlags(itemFlags.toArray(new ItemFlag[0]));
+    public @NotNull ItemBuilder removeItemFlags(@NotNull List<ItemFlag> itemFlags) {
+        return removeItemFlags(itemFlags.toArray(new ItemFlag[0]));
     }
 
-    @NotNull
-    public B hideAttributes() {
-        return this.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+    public @NotNull ItemBuilder hideAttributes() {
+        return addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
     }
 
-    @NotNull
-    public B unbreakable(final boolean state) {
+    public @NotNull ItemBuilder unbreakable(final boolean state) {
         @Nullable final ItemMeta itemMeta = itemStack.getItemMeta();
-        if(itemMeta == null) return (B) this;
+        if(itemMeta == null) return this;
 
-        itemMeta.spigot().setUnbreakable(state);
+        itemMeta.setUnbreakable(state);
 
-        return this.itemMeta(itemMeta);
+        return this.meta(itemMeta);
     }
 
-    @NotNull
-    public B glowing(boolean glowing) {
-        @NotNull final Enchantment enchantment = Enchantment.ARROW_INFINITE;
+    public @NotNull ItemBuilder glowing(boolean glowing) {
+        @NotNull final Enchantment enchantment = itemStack.getType() == Material.BOW ? Enchantment.LURE : Enchantment.INFINITY;
 
         if(glowing) {
-            this.addUnsafeEnchantment(enchantment, 1);
             this.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+            this.addEnchantment(enchantment, 0, true);
         } else {
             this.removeItemFlags(ItemFlag.HIDE_ENCHANTS);
             this.removeEnchantment(enchantment);
         }
 
-        return (B) this;
+        return this;
     }
 
-    @NotNull
-    public B skullOwner(@NotNull OfflinePlayer offlinePlayer) {
+    public @NotNull ItemBuilder skullOwner(@NotNull OfflinePlayer offlinePlayer) {
         @Nullable final ItemMeta itemMeta = itemStack.getItemMeta();
-        if(itemMeta == null) return (B) this;
+        if(itemMeta == null) return this;
+        if(!(itemMeta instanceof @NotNull SkullMeta skullMeta)) return this;
 
-        if(!(itemMeta instanceof SkullMeta)) return (B) this;
-        @NotNull final SkullMeta skullMeta = (SkullMeta) itemMeta;
+        skullMeta.setOwningPlayer(offlinePlayer);
 
-        skullMeta.setOwner(offlinePlayer.getName());
-
-        return this.itemMeta(skullMeta);
+        return this.meta(skullMeta);
     }
 
-    @NotNull
-    @Deprecated
-    public B skullOwner(@NotNull String username) {
+    public @NotNull ItemBuilder skullOwner(@NotNull String username) {
         @Nullable final ItemMeta itemMeta = itemStack.getItemMeta();
-        if(itemMeta == null) return (B) this;
+        if(itemMeta == null) return this;
+        if(!(itemMeta instanceof @NotNull SkullMeta skullMeta)) return this;
 
-        if(!(itemMeta instanceof SkullMeta)) return (B) this;
-        @NotNull final SkullMeta skullMeta = (SkullMeta) itemMeta;
+        skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(username));
 
-        skullMeta.setOwner(username);
-
-        return this.itemMeta(skullMeta);
+        return this.meta(skullMeta);
     }
 
-    @NotNull
-    public B addPotionCustomEffect(@NotNull PotionEffect effect) {
+    public @NotNull ItemBuilder skullTexture(@NotNull String textureValue) {
         @Nullable final ItemMeta itemMeta = itemStack.getItemMeta();
-        if(itemMeta == null) return (B) this;
+        if(itemMeta == null) return this;
+        if(!(itemMeta instanceof @NotNull SkullMeta skullMeta)) return this;
+        if(textureValue.isEmpty()) return this;
 
-        if(!(itemMeta instanceof PotionMeta)) return (B) this;
-        @NotNull final PotionMeta potionMeta = (PotionMeta) itemMeta;
+        PlayerProfile profile = Bukkit.createProfile(UUID.randomUUID());
+        profile.setProperty(new ProfileProperty("textures", textureValue));
 
+        skullMeta.setPlayerProfile(profile);
+
+        return this.meta(skullMeta);
+    }
+
+    @ApiStatus.Experimental
+    public @NotNull ItemBuilder customModelData(int customModelData) {
+        itemStack.setData(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addFloat(customModelData).build());
+
+        return this;
+    }
+
+    public @NotNull ItemBuilder addPotionEffect(@NotNull PotionEffect effect) {
+        @Nullable final ItemMeta itemMeta = itemStack.getItemMeta();
+        if(itemMeta == null) return this;
+        if(!(itemMeta instanceof @NotNull PotionMeta potionMeta)) return this;
+
+        potionMeta.setColor(effect.getType().getColor());
         potionMeta.addCustomEffect(effect, true);
 
-        return this.itemMeta(potionMeta);
-    }
-
-    @NotNull
-    public B spawnerType(@NotNull EntityType entityType) {
-        @Nullable final ItemMeta itemMeta = itemStack.getItemMeta();
-        if(itemMeta == null) return (B) this;
-
-        if(!(itemMeta instanceof BlockStateMeta)) return (B) this;
-        @NotNull final BlockStateMeta blockStateMeta = (BlockStateMeta) itemMeta;
-
-        if(!(blockStateMeta.getBlockState() instanceof CreatureSpawner)) return (B) this;
-        @NotNull final CreatureSpawner creatureSpawner = (CreatureSpawner) blockStateMeta.getBlockState();
-
-        creatureSpawner.setSpawnedType(entityType);
-        blockStateMeta.setBlockState(creatureSpawner);
-
-        return this.itemMeta(blockStateMeta);
-    }
-
-
-    @NotNull
-    public B addFireworkEffect(@NotNull FireworkEffect... fireworkEffect) {
-        @Nullable final ItemMeta itemMeta = itemStack.getItemMeta();
-        if(itemMeta == null) return (B) this;
-
-        if(!(itemMeta instanceof @NotNull FireworkMeta)) return (B) this;
-        @NotNull final FireworkMeta fireworkMeta = (FireworkMeta) itemMeta;
-
-        fireworkMeta.addEffects(fireworkEffect);
-
-        return this.itemMeta(fireworkMeta);
+        return this.meta(potionMeta);
     }
 
 }

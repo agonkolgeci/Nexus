@@ -6,4 +6,4 @@ author: Agon KOLGECI
 load: POSTWORLD
 main: com.agonkolgeci.nexus.NexusAPIBootstrap
 
-depend: [ LuckPerms ]
+depend: [ LuckPerms, DecentHolograms ]

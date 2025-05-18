@@ -15,16 +15,16 @@
     <name>Nexus-Hub</name>
 
     <properties>
-        <java.version>8</java.version>
-        <project.checkout>../target/bukkit</project.checkout>
+        <java.version>21</java.version>
+        <project.checkout>../target/paper</project.checkout>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot</artifactId>
-            <version>1.8.8-R0.1-SNAPSHOT</version>
+            <groupId>io.papermc.paper</groupId>
+            <artifactId>paper-api</artifactId>
+            <version>1.21.4-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
 
@@ -32,6 +32,13 @@
             <groupId>com.agonkolgeci.nexus</groupId>
             <artifactId>nexus-api</artifactId>
             <version>1.0-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.decentsoftware-eu</groupId>
+            <artifactId>decentholograms</artifactId>
+            <version>2.8.17</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

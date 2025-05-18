@@ -1,12 +1,11 @@
 package com.agonkolgeci.nexus_hub.core.jumps.components;
 
+import com.agonkolgeci.nexus.plugin.AbstractAddon;
+import com.agonkolgeci.nexus.plugin.PluginScheduler;
+import com.agonkolgeci.nexus.utils.world.EffectsUtils;
 import com.agonkolgeci.nexus_hub.core.jumps.JumpManager;
 import com.agonkolgeci.nexus_hub.core.jumps.JumpsManager;
 import com.agonkolgeci.nexus_hub.core.players.HubPlayer;
-import com.agonkolgeci.nexus.plugin.AbstractAddon;
-import com.agonkolgeci.nexus.plugin.PluginScheduler;
-import com.agonkolgeci.nexus.utils.render.EffectsUtils;
-import com.agonkolgeci.nexus.utils.render.MessageUtils;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -87,18 +86,18 @@ public class JumpPlayer extends AbstractAddon<JumpsManager> implements PluginSch
 
         module.getItems().forEach((i, itemStack) -> hubPlayer.getPlayer().getInventory().setItem(i, itemStack));
 
-        MessageUtils.sendMessage(MessageUtils.Type.SUCCESS, module, hubPlayer.getAudience(), Component.text("Vous venez de commencez le").appendSpace().append(Component.text(jumpManager.getName(), NamedTextColor.YELLOW)).append(Component.text(".")).colorIfAbsent(NamedTextColor.GOLD));
+        hubPlayer.getPlayer().sendMessage(JumpsManager.MESSAGING.success(Component.text("Vous venez de commencez le").appendSpace().append(Component.text(jumpManager.getName(), NamedTextColor.YELLOW)).append(Component.text(".")).colorIfAbsent(NamedTextColor.GOLD)));
 
         if(hasRecord()) {
-            MessageUtils.sendMessage(MessageUtils.Type.INFO, module, hubPlayer.getAudience(), Component.text("Votre record personnel à battre est de").appendSpace().append(module.retrieveTimer(record)).append(Component.text(".")).colorIfAbsent(NamedTextColor.GREEN));
+            hubPlayer.getPlayer().sendMessage(JumpsManager.MESSAGING.success(Component.text("Votre record personnel à battre est de").appendSpace().append(module.retrieveTimer(record)).append(Component.text(".")).colorIfAbsent(NamedTextColor.GREEN)));
         } else {
-            MessageUtils.sendMessage(MessageUtils.Type.INFO, module, hubPlayer.getAudience(), Component.text("Vous n'avez aucun record personnel.").colorIfAbsent(NamedTextColor.GRAY));
+            hubPlayer.getPlayer().sendMessage(JumpsManager.MESSAGING.success(Component.text("Vous n'avez aucun record personnel.").colorIfAbsent(NamedTextColor.GRAY)));
         }
 
         return this.currentTask = new BukkitRunnable() {
             @Override
             public void run() {
-                hubPlayer.getAudience().sendActionBar(module.retrieveTimer(elapsed));
+                hubPlayer.getPlayer().sendActionBar(module.retrieveTimer(elapsed));
 
                 elapsed++;
             }
@@ -120,7 +119,7 @@ public class JumpPlayer extends AbstractAddon<JumpsManager> implements PluginSch
 
         hubPlayer.getPlayer().teleport(jumpManager.getLobby());
 
-        MessageUtils.sendMessage(MessageUtils.Type.SUCCESS, module, hubPlayer.getAudience(), Component.text("Vous venez de quitter le").appendSpace().append(Component.text(jumpManager.getName(), NamedTextColor.YELLOW)).append(Component.text(".")).colorIfAbsent(NamedTextColor.GRAY));
+        hubPlayer.getPlayer().sendMessage(JumpsManager.MESSAGING.success(Component.text("Vous venez de quitter le").appendSpace().append(Component.text(jumpManager.getName(), NamedTextColor.YELLOW)).append(Component.text("."))));
     }
 
     public void finish() {
@@ -130,7 +129,7 @@ public class JumpPlayer extends AbstractAddon<JumpsManager> implements PluginSch
 
         module.removePlayer(hubPlayer);
 
-        MessageUtils.sendMessage(MessageUtils.Type.SUCCESS, module, hubPlayer.getAudience(), Component.text("Vous avez terminé le").appendSpace().append(Component.text(jumpManager.getName(), NamedTextColor.YELLOW)).appendSpace().append(Component.text("en")).appendSpace().append(module.retrieveTimer(elapsed)).appendSpace().append(Component.text("!")).colorIfAbsent(NamedTextColor.GOLD));
+        hubPlayer.getPlayer().sendMessage(JumpsManager.MESSAGING.success(Component.text("Vous avez terminé le").appendSpace().append(Component.text(jumpManager.getName(), NamedTextColor.YELLOW)).appendSpace().append(Component.text("en")).appendSpace().append(module.retrieveTimer(elapsed)).appendSpace().append(Component.text("!")).colorIfAbsent(NamedTextColor.GOLD)));
 
         final boolean newRecord = !hasRecord();
         final boolean beatRecord = elapsed < record && !newRecord;
@@ -139,13 +138,13 @@ public class JumpPlayer extends AbstractAddon<JumpsManager> implements PluginSch
             this.setRecord(elapsed);
 
             if(beatRecord) {
-                MessageUtils.sendMessage(MessageUtils.Type.INFO, module, hubPlayer.getAudience(), Component.text("Félicitations, vous avez battu votre record personnel !").colorIfAbsent(NamedTextColor.GREEN));
+                hubPlayer.getPlayer().sendMessage(JumpsManager.MESSAGING.info(Component.text("Félicitations, vous avez battu votre record personnel !").colorIfAbsent(NamedTextColor.GREEN)));
             }
 
-            MessageUtils.sendMessage(MessageUtils.Type.INFO, module, hubPlayer.getAudience(), Component.text("Votre nouveau record personnel est de").appendSpace().append(module.retrieveTimer(record)).append(Component.text(".")).colorIfAbsent(NamedTextColor.GREEN));
+            hubPlayer.getPlayer().sendMessage(JumpsManager.MESSAGING.info(Component.text("Votre nouveau record personnel est de").appendSpace().append(module.retrieveTimer(record)).append(Component.text(".")).colorIfAbsent(NamedTextColor.GREEN)));
         }
 
-        MessageUtils.sendMessage(MessageUtils.Type.SUCCESS, module.getInstance().getAll(), Component.text().append(hubPlayer.getDisplayName()).appendSpace().append(Component.text("vient de terminer le")).appendSpace().append(Component.text(jumpManager.getName(), NamedTextColor.YELLOW)).appendSpace().append(Component.text("en")).appendSpace().append(module.retrieveTimer(elapsed)).appendSpace().append(Component.text("!")).colorIfAbsent(NamedTextColor.GREEN).build());
+        hubPlayer.getPlayer().sendMessage(JumpsManager.MESSAGING.success(Component.text().append(hubPlayer.getDisplayName()).appendSpace().append(Component.text("vient de terminer le")).appendSpace().append(Component.text(jumpManager.getName(), NamedTextColor.YELLOW)).appendSpace().append(Component.text("en")).appendSpace().append(module.retrieveTimer(elapsed)).appendSpace().append(Component.text("!")).colorIfAbsent(NamedTextColor.GREEN).build()));
         EffectsUtils.spawnFireworks(hubPlayer.getPlayer().getLocation(), 5, 5);
 
         jumpManager.getLeaderboard().update();
@@ -162,7 +161,7 @@ public class JumpPlayer extends AbstractAddon<JumpsManager> implements PluginSch
     public void setCheckpoint(@NotNull Map.Entry<Integer, JumpLocation> checkpoint) {
         this.checkpoint = checkpoint;
 
-        MessageUtils.sendMessage(MessageUtils.Type.SUCCESS, module, hubPlayer.getAudience(), Component.text("Vous avez atteint le checkpoint").appendSpace().append(Component.text("#" + checkpoint.getKey(), NamedTextColor.YELLOW)).appendSpace().append(Component.text("en")).appendSpace().append(module.retrieveTimer(elapsed)).append(Component.text(".")).colorIfAbsent(NamedTextColor.GOLD));
+        hubPlayer.getPlayer().sendMessage(JumpsManager.MESSAGING.info(Component.text("Vous avez atteint le checkpoint").appendSpace().append(Component.text("#" + checkpoint.getKey(), NamedTextColor.YELLOW)).appendSpace().append(Component.text("en")).appendSpace().append(module.retrieveTimer(elapsed)).append(Component.text(".")).colorIfAbsent(NamedTextColor.GOLD)));
     }
 
     @Nullable

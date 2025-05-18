@@ -1,4 +1,4 @@
-package com.agonkolgeci.nexus.utils.render;
+package com.agonkolgeci.nexus.utils.entity;
 
 import org.bukkit.Location;
 import org.bukkit.World;

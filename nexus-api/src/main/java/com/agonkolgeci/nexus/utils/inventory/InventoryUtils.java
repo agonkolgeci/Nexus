@@ -1,4 +1,4 @@
-package com.agonkolgeci.nexus.utils.render;
+package com.agonkolgeci.nexus.utils.inventory;
 
 import com.google.common.base.Function;
 import org.bukkit.inventory.Inventory;

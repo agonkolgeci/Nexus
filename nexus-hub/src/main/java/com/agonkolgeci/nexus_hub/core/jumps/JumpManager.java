@@ -174,7 +174,7 @@ public class JumpManager extends PluginManager<NexusHub> implements PluginAdapte
         } catch (RuntimeException exception) {
             jumpsManager.removePlayer(hubPlayer);
 
-            MessageUtils.sendMessage(jumpsManager, hubPlayer.getAudience(), exception);
+            hubPlayer.getPlayer().sendMessage(JumpsManager.MESSAGING.error(exception));
         } catch (Exception exception) {
             exception.printStackTrace();
         }

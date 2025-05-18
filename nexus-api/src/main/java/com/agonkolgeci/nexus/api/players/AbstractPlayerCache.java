@@ -3,9 +3,7 @@ package com.agonkolgeci.nexus.api.players;
 import com.agonkolgeci.nexus.AbstractPlugin;
 import com.agonkolgeci.nexus.plugin.PluginManager;
 import lombok.Getter;
-import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,8 +19,6 @@ public abstract class AbstractPlayerCache<I extends AbstractPlugin> extends Plug
     @NotNull protected final String username;
     @NotNull protected final Component displayName;
 
-    @NotNull protected final Audience audience;
-
     public AbstractPlayerCache(@NotNull I instance, @NotNull Player player) {
         super(instance);
 
@@ -31,9 +27,7 @@ public abstract class AbstractPlayerCache<I extends AbstractPlugin> extends Plug
         this.uniqueId = player.getUniqueId();
 
         this.username = player.getName();
-        this.displayName = LegacyComponentSerializer.legacySection().deserialize(player.getDisplayName());
-
-        this.audience = instance.getAdventure().player(player);
+        this.displayName = player.displayName();
     }
 
     protected abstract void onReady();
