@@ -4,6 +4,7 @@ website: "${project.parent.url}"
 author: Agon KOLGECI
 
 load: POSTWORLD
+api-version: 1.21
 main: com.agonkolgeci.nexus.NexusAPIBootstrap
 
-depend: [ LuckPerms, DecentHolograms ]
+depend: [ LuckPerms ]

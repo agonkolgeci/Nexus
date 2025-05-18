@@ -6,7 +6,6 @@ import com.agonkolgeci.nexus.utils.world.ItemBuilder;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -37,7 +36,7 @@ public abstract class AbstractGui<I extends AbstractPlugin> extends PluginManage
         this.size = size;
         this.scalable = scalable;
 
-        this.inventory = instance.getServer().createInventory(null, size, LegacyComponentSerializer.legacySection().serialize(title.colorIfAbsent(NamedTextColor.DARK_GRAY)));
+        this.inventory = instance.getServer().createInventory(null, size, title.colorIfAbsent(NamedTextColor.DARK_GRAY));
 
         this.parent = parent;
 

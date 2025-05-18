@@ -8,6 +8,7 @@ import io.papermc.paper.datacomponent.item.CustomModelData;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -55,7 +56,7 @@ public class ItemBuilder {
     }
 
     public @NotNull ItemStack build() {
-        @NotNull final ItemStack itemStack = this.build();
+        @NotNull final ItemStack itemStack = new ItemStack(this.itemStack);
 
         @Nullable final ItemMeta itemMeta = itemStack.getItemMeta();
         if(itemMeta == null) return itemStack;
@@ -137,7 +138,7 @@ public class ItemBuilder {
         @Nullable final ItemMeta itemMeta = itemStack.getItemMeta();
         if(itemMeta == null) return this;
 
-        itemMeta.displayName(displayName);
+        itemMeta.displayName(displayName.decoration(TextDecoration.ITALIC, false));
 
         return this.meta(itemMeta);
     }
@@ -153,7 +154,7 @@ public class ItemBuilder {
         @Nullable final ItemMeta itemMeta = itemStack.getItemMeta();
         if(itemMeta == null) return this;
 
-        itemMeta.lore(lines);
+        itemMeta.lore(lines.stream().map(line -> line.colorIfAbsent(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)).toList());
 
         return this.meta(itemMeta);
     }

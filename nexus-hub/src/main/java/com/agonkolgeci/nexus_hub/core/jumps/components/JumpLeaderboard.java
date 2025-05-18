@@ -21,6 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Getter
 public class JumpLeaderboard extends AbstractAddon<JumpsManager> {
@@ -46,26 +47,32 @@ public class JumpLeaderboard extends AbstractAddon<JumpsManager> {
 
         this.limit = configuration.require("limit");
 
-        this.hologram = DHAPI.createHologram(title, location);
+        this.hologram = DHAPI.createHologram(jumpManager.getName().replaceAll("[^A-Za-z0-9]", "_"), location);
     }
 
     public void update() {
         @NotNull final LinkedHashMap<OfflinePlayer, Integer> records = jumpManager.retrieveRecords(limit);
         if(!records.isEmpty()) {
             int position = 1;
-            DHAPI.setHologramLines(hologram, records.entrySet().stream().map(entry -> {
-                return LegacyComponentSerializer.legacyAmpersand().serialize(
-                        Component.text()
-                                .append(Component.text(position+".", NamedTextColor.YELLOW, TextDecoration.BOLD))
-                                .appendSpace()
-                                .append(Component.text(Objects.requireNonNull(entry.getKey().getName()), NamedTextColor.WHITE))
-                                .appendSpace()
-                                .append(Component.text("-", NamedTextColor.GRAY))
-                                .appendSpace()
-                                .append(module.retrieveTimer(entry.getValue()))
-                                .build()
-                );
-            }).collect(Collectors.toList()));
+            DHAPI.setHologramLines(
+                    hologram,
+                    Stream.concat(
+                            Stream.of(this.title, ""),
+                            records.entrySet().stream().map(entry ->
+                                    LegacyComponentSerializer.legacyAmpersand().serialize(
+                                            Component.text()
+                                                    .append(Component.text(position + ".", NamedTextColor.YELLOW, TextDecoration.BOLD))
+                                                    .appendSpace()
+                                                    .append(Component.text(Objects.requireNonNull(entry.getKey().getName()), NamedTextColor.WHITE))
+                                                    .appendSpace()
+                                                    .append(Component.text("-", NamedTextColor.GRAY))
+                                                    .appendSpace()
+                                                    .append(module.retrieveTimer(entry.getValue()))
+                                                    .build()
+                                    )
+                            )
+                    ).collect(Collectors.toList())
+            );
         } else {
             DHAPI.setHologramLines(hologram, List.of(LegacyComponentSerializer.legacyAmpersand().serialize(Component.text("Aucun score", NamedTextColor.GRAY))));
         }

@@ -4,9 +4,10 @@ website: "${project.parent.url}"
 author: Agon KOLGECI
 
 load: POSTWORLD
+api-version: 1.21
 main: com.agonkolgeci.nexus_hub.NexusHubBootstrap
 
-depend: [ Nexus-API ]
+depend: [ Nexus-API, DecentHolograms ]
 
 commands:
   spawn:

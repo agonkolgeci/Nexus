@@ -11,16 +11,11 @@ import com.agonkolgeci.nexus_hub.core.jumps.JumpsManager;
 import com.agonkolgeci.nexus_hub.core.players.HubPlayersManager;
 import com.agonkolgeci.nexus_hub.core.spawn.SpawnManager;
 import com.agonkolgeci.nexus_hub.core.utilities.UtilitiesManager;
-import eu.decentsoftware.holograms.api.DecentHolograms;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
-
 @Getter
 public final class NexusHub extends AbstractPlugin {
-
-    @NotNull private final DecentHolograms decentHolograms;
 
     @NotNull private final ConfigManager configManager;
     @NotNull private final DatabaseManager databaseManager;
@@ -36,8 +31,6 @@ public final class NexusHub extends AbstractPlugin {
 
     public NexusHub(@NotNull AbstractBootstrap bootstrap) {
         super(bootstrap);
-
-        this.decentHolograms = Objects.requireNonNull(server.getServicesManager().getRegistration(DecentHolograms.class), "DecentHolograms is required.").getProvider();
 
         this.configManager = new ConfigManager(this);
         this.databaseManager = new DatabaseManager(this, configManager.of("database"));

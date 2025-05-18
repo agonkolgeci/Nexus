@@ -7,7 +7,7 @@ import com.agonkolgeci.nexus.core.players.NexusPlayer;
 import com.agonkolgeci.nexus.plugin.PluginAdapter;
 import com.agonkolgeci.nexus.plugin.PluginManager;
 import com.agonkolgeci.nexus.utils.objects.ObjectUtils;
-import com.agonkolgeci.nexus.utils.render.MessageUtils;
+import io.papermc.paper.event.player.AsyncChatEvent;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -21,7 +21,6 @@ import net.luckperms.api.model.user.User;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
@@ -86,8 +85,10 @@ public class StylizerManager extends PluginManager<NexusAPI> implements PluginAd
 
             @NotNull final CachedMetaData cachedMetaData = group.getCachedData().getMetaData();
 
-            if(cachedMetaData.getPrefix() != null) team.prefix(LegacyComponentSerializer.legacySection().deserialize(cachedMetaData.getPrefix()));
-            if(cachedMetaData.getSuffix() != null) team.suffix(LegacyComponentSerializer.legacySection().deserialize(cachedMetaData.getSuffix()));
+            if(cachedMetaData.getPrefix() != null) team.prefix(LegacyComponentSerializer.legacyAmpersand().deserialize(cachedMetaData.getPrefix()));
+            if(cachedMetaData.getSuffix() != null) team.suffix(LegacyComponentSerializer.legacyAmpersand().deserialize(cachedMetaData.getSuffix()));
+
+            team.color(NamedTextColor.nearestTo(Objects.requireNonNullElse(team.prefix().color(), NamedTextColor.GRAY)));
 
             this.teams.put(group, team);
         }
@@ -108,7 +109,7 @@ public class StylizerManager extends PluginManager<NexusAPI> implements PluginAd
 
         team.addEntry(nexusPlayer.getUsername());
 
-        nexusPlayer.getPlayer().displayName(Component.empty().append(team.prefix()).append(nexusPlayer.getDisplayName()).append(team.suffix()));
+//        nexusPlayer.getPlayer().displayName(Component.empty().append(team.prefix()).append(nexusPlayer.getDisplayName()).append(team.suffix()));
     }
 
     public void unloadPlayer(@NotNull NexusPlayer nexusPlayer) {
@@ -119,7 +120,7 @@ public class StylizerManager extends PluginManager<NexusAPI> implements PluginAd
     }
 
     @EventHandler
-    public void onAsyncPlayerChat(@NotNull AsyncPlayerChatEvent event) {
+    public void onAsyncPlayerChat(@NotNull AsyncChatEvent event) {
         @NotNull final Player player = event.getPlayer();
 
         @NotNull final Component format = Component.text()
@@ -127,11 +128,11 @@ public class StylizerManager extends PluginManager<NexusAPI> implements PluginAd
                 .appendSpace()
                 .append(Component.text(":"))
                 .appendSpace()
-                .append(MessageUtils.MM_SERIALIZER.deserialize(event.getMessage()))
+                .append(event.originalMessage())
                 .colorIfAbsent(NamedTextColor.WHITE)
                 .build();
 
-        event.setFormat(LegacyComponentSerializer.legacySection().serialize(format));
+//        event.message(format);
     }
 
     @EventHandler
