@@ -1,7 +1,8 @@
 package com.agonkolgeci.nexus;
 
+import com.agonkolgeci.nexus.core.binder.BinderManager;
+import com.agonkolgeci.nexus.core.gui.GuiManager;
 import com.agonkolgeci.nexus.core.messaging.MessagingManager;
-import com.agonkolgeci.nexus.core.players.PlayersManager;
 import com.agonkolgeci.nexus.core.servers.ServersManager;
 import com.agonkolgeci.nexus.core.stylizer.StylizerManager;
 import lombok.Getter;
@@ -18,10 +19,10 @@ public final class NexusAPI extends AbstractPlugin {
 
     @NotNull private final LuckPerms luckPerms;
 
-    @NotNull private final PlayersManager playersManager;
+    @NotNull private final BinderManager binderManager;
+    @NotNull private final GuiManager guiManager;
     @NotNull private final ServersManager serversManager;
     @NotNull private final MessagingManager messagingManager;
-
     @NotNull private final StylizerManager stylizerManager;
 
     public NexusAPI(@NotNull JavaPlugin plugin) {
@@ -29,10 +30,10 @@ public final class NexusAPI extends AbstractPlugin {
 
         this.luckPerms = Objects.requireNonNull(server.getServicesManager().getRegistration(LuckPerms.class), "LuckPerms is required.").getProvider();
 
+        this.binderManager = new BinderManager(this);
+        this.guiManager = new GuiManager(this);
         this.messagingManager = new MessagingManager(this);
-        this.playersManager = new PlayersManager(this);
         this.serversManager = new ServersManager(this);
-
         this.stylizerManager = new StylizerManager(this);
     }
 
@@ -40,18 +41,19 @@ public final class NexusAPI extends AbstractPlugin {
     public void load() throws Exception {
         instance = this;
 
-        playersManager.load();
+        binderManager.load();
+        guiManager.load();
         serversManager.load();
         messagingManager.load();
-
         stylizerManager.load();
     }
 
     @Override
     public void unload() {
-        playersManager.unload();
+        binderManager.unload();
+        guiManager.unload();
         serversManager.unload();
-
+        messagingManager.unload();
         stylizerManager.unload();
     }
 

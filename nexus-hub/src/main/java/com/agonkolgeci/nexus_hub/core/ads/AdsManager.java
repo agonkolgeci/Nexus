@@ -1,13 +1,14 @@
 package com.agonkolgeci.nexus_hub.core.ads;
 
-import com.agonkolgeci.nexus.api.players.events.PlayerReadyEvent;
-import com.agonkolgeci.nexus.common.config.ConfigSection;
-import com.agonkolgeci.nexus.plugin.PluginManager;
+import com.agonkolgeci.nexus.api.config.ConfigSection;
 import com.agonkolgeci.nexus.plugin.PluginAdapter;
+import com.agonkolgeci.nexus.plugin.PluginManager;
 import com.agonkolgeci.nexus_hub.NexusHub;
-import com.agonkolgeci.nexus_hub.core.players.HubPlayer;
 import lombok.Getter;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.jetbrains.annotations.NotNull;
 
 @Getter
@@ -40,19 +41,19 @@ public class AdsManager extends PluginManager<NexusHub> implements PluginAdapter
     }
 
     @EventHandler
-    public void onPlayerReady(@NotNull PlayerReadyEvent event) {
-        @NotNull final HubPlayer hubPlayer = instance.getPlayersController().retrievePlayerCache(event.getPlayer());
+    public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
+        @NotNull final Player player = event.getPlayer();
 
-        adsBossBar.loadPlayer(hubPlayer);
-        adsActionBar.loadPlayer(hubPlayer);
+        adsBossBar.addAudience(player);
+        adsActionBar.addAudience(player);
     }
 
     @EventHandler
-    public void onPlayerLogout(@NotNull PlayerReadyEvent event) {
-        @NotNull final HubPlayer hubPlayer = instance.getPlayersController().retrievePlayerCache(event.getPlayer());
+    public void onPlayerQuit(@NotNull PlayerQuitEvent event) {
+        @NotNull final Player player = event.getPlayer();
 
-        adsBossBar.unloadPlayer(hubPlayer);
-        adsActionBar.unloadPlayer(hubPlayer);
+        adsBossBar.removeAudience(player);
+        adsActionBar.removeAudience(player);
     }
 
 }

@@ -1,7 +1,6 @@
 package com.agonkolgeci.nexus.utils.objects;
 
 import org.bukkit.Color;
-import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -56,11 +55,11 @@ public class ObjectUtils {
         return Color.fromBGR(SPLITTABLE_RANDOM.nextInt(255), SPLITTABLE_RANDOM.nextInt(255), SPLITTABLE_RANDOM.nextInt(255));
     }
 
-    public static long retrieveTicks(int seconds) {
+    public static long toTicks(int seconds) {
         return seconds * 20L;
     }
 
-    public static long retrieveTicks(double seconds) {
+    public static long toTicks(double seconds) {
         return Math.round(seconds * 20.0);
     }
 

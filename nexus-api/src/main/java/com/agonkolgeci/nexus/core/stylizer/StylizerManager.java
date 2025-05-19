@@ -1,9 +1,7 @@
 package com.agonkolgeci.nexus.core.stylizer;
 
 import com.agonkolgeci.nexus.NexusAPI;
-import com.agonkolgeci.nexus.api.players.events.PlayerLogoutEvent;
-import com.agonkolgeci.nexus.api.players.events.PlayerReadyEvent;
-import com.agonkolgeci.nexus.core.players.NexusPlayer;
+import com.agonkolgeci.nexus.api.events.ListenerAdapter;
 import com.agonkolgeci.nexus.plugin.PluginAdapter;
 import com.agonkolgeci.nexus.plugin.PluginManager;
 import com.agonkolgeci.nexus.utils.objects.ObjectUtils;
@@ -20,7 +18,8 @@ import net.luckperms.api.model.group.Group;
 import net.luckperms.api.model.user.User;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
@@ -29,7 +28,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 @Getter
-public class StylizerManager extends PluginManager<NexusAPI> implements PluginAdapter, Listener {
+public class StylizerManager extends PluginManager<NexusAPI> implements PluginAdapter, ListenerAdapter {
 
     @NotNull private final LuckPerms luckPerms;
     @NotNull private final Scoreboard scoreboard;
@@ -49,6 +48,8 @@ public class StylizerManager extends PluginManager<NexusAPI> implements PluginAd
     public void load() throws Exception {
         this.updateTeams();
 
+        instance.getEventsManager().registerAdapter(this);
+
         luckPerms.getGroupManager().loadAllGroups().join();
 
         luckPerms.getEventBus().subscribe(GroupDataRecalculateEvent.class, event -> this.updateTeams());
@@ -56,15 +57,15 @@ public class StylizerManager extends PluginManager<NexusAPI> implements PluginAd
             @Nullable final Player player = instance.getServer().getPlayer(event.getUser().getUniqueId());
             if(player == null) return;
 
-            @NotNull final NexusPlayer nexusPlayer = instance.getPlayersManager().retrievePlayerCache(player);
-
-            this.updatePlayer(nexusPlayer);
+            this.updatePlayer(player);
         });
     }
 
     @Override
     public void unload() {
         this.unregisterTeams();
+
+        instance.getEventsManager().unregisterAdapter(this);
     }
 
     protected void unregisterTeams() {
@@ -95,54 +96,49 @@ public class StylizerManager extends PluginManager<NexusAPI> implements PluginAd
     }
 
     @Nullable
-    protected Team retrieveTeam(@NotNull NexusPlayer nexusPlayer) {
-        @NotNull final User user = luckPerms.getPlayerAdapter(Player.class).getUser(nexusPlayer.getPlayer());
+    protected Team retrieveTeam(@NotNull Player player) {
+        @NotNull final User user = luckPerms.getPlayerAdapter(Player.class).getUser(player);
         @NotNull final Collection<Group> inheritedGroups = user.getInheritedGroups(user.getQueryOptions());
 
         return teams.getOrDefault(inheritedGroups.stream().max(Comparator.comparingInt(group -> group.getWeight().orElse(0))).orElseThrow(() -> new IllegalStateException("Unable to retrieve to the LuckPerms' User group.")), null);
-
     }
 
-    public void updatePlayer(@NotNull NexusPlayer nexusPlayer) {
-        @Nullable final Team team = retrieveTeam(nexusPlayer);
+    public void updatePlayer(@NotNull Player player) {
+        @Nullable final Team team = retrieveTeam(player);
         if(team == null) return;
 
-        team.addEntry(nexusPlayer.getUsername());
+        team.addPlayer(player);
 
-//        nexusPlayer.getPlayer().displayName(Component.empty().append(team.prefix()).append(nexusPlayer.getDisplayName()).append(team.suffix()));
+        player.displayName(Component.empty().append(team.prefix()).append(player.name().color(team.prefix().color())).append(team.suffix()));
     }
 
-    public void unloadPlayer(@NotNull NexusPlayer nexusPlayer) {
-        @Nullable final Team team = scoreboard.getEntryTeam(nexusPlayer.getUsername());
+    public void unloadPlayer(@NotNull Player player) {
+        @Nullable final Team team = scoreboard.getPlayerTeam(player);
         if(team == null) return;
 
-        team.removeEntry(nexusPlayer.getUsername());
+        team.removePlayer(player);
     }
 
     @EventHandler
     public void onAsyncPlayerChat(@NotNull AsyncChatEvent event) {
-        @NotNull final Player player = event.getPlayer();
-
-        @NotNull final Component format = Component.text()
-                .append(player.displayName())
-                .appendSpace()
-                .append(Component.text(":"))
-                .appendSpace()
-                .append(event.originalMessage())
-                .colorIfAbsent(NamedTextColor.WHITE)
-                .build();
-
-//        event.message(format);
+        event.renderer((source, sourceDisplayName, message, viewer) -> {
+            return sourceDisplayName
+                    .appendSpace()
+                    .append(Component.text(":"))
+                    .appendSpace()
+                    .append(event.originalMessage())
+                    .colorIfAbsent(NamedTextColor.WHITE);
+        });
     }
 
     @EventHandler
-    public void onPlayerReady(@NotNull PlayerReadyEvent event) {
-        this.updatePlayer(instance.getPlayersManager().retrievePlayerCache(event.getPlayer()));
+    public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
+        this.updatePlayer(event.getPlayer());
     }
 
     @EventHandler
-    public void onPlayerLogout(@NotNull PlayerLogoutEvent event) {
-        this.unloadPlayer(instance.getPlayersManager().retrievePlayerCache(event.getPlayer()));
+    public void onPlayerQuit(@NotNull PlayerQuitEvent event) {
+        this.unloadPlayer(event.getPlayer());
     }
 
 }

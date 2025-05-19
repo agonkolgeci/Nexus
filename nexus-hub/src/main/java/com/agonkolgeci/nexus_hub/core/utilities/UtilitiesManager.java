@@ -19,7 +19,7 @@ public class UtilitiesManager extends PluginManager<NexusHub> implements PluginA
 
     @Override
     public void load() throws Exception {
-        instance.getCommandsManager().registerCommandAdapter("speed", new SpeedCommand(this));
+        instance.getCommandsManager().registerAdapter("speed", new SpeedCommand(this));
     }
 
     @Override

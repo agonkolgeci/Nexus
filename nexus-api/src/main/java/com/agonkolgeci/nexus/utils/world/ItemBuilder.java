@@ -51,10 +51,6 @@ public class ItemBuilder {
         this(new ItemStack(material));
     }
 
-    public ItemBuilder(@NotNull Material material, int amount, short data) {
-        this(new ItemStack(material, amount, data));
-    }
-
     public @NotNull ItemStack build() {
         @NotNull final ItemStack itemStack = new ItemStack(this.itemStack);
 
@@ -83,7 +79,7 @@ public class ItemBuilder {
             lore.addAll(actions.entrySet().stream().map(e -> Component.empty().append(e.getKey().colorIfAbsent(NamedTextColor.WHITE)).appendSpace().append(Component.text("•", NamedTextColor.DARK_GRAY)).appendSpace().append(e.getValue().colorIfAbsent(NamedTextColor.GRAY))).toList());
         }
 
-        itemMeta.lore(lore);
+        itemMeta.lore(lore.stream().map(line -> line.colorIfAbsent(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)).toList());
         itemStack.setItemMeta(itemMeta);
 
         return new ItemStack(itemStack);
@@ -154,7 +150,7 @@ public class ItemBuilder {
         @Nullable final ItemMeta itemMeta = itemStack.getItemMeta();
         if(itemMeta == null) return this;
 
-        itemMeta.lore(lines.stream().map(line -> line.colorIfAbsent(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)).toList());
+        itemMeta.lore(lines);
 
         return this.meta(itemMeta);
     }
@@ -237,6 +233,10 @@ public class ItemBuilder {
         return addItemFlags(itemFlags.toArray(new ItemFlag[0]));
     }
 
+    public @NotNull ItemBuilder hideAllAttributes() {
+        return addItemFlags(ItemFlag.values());
+    }
+
     public @NotNull ItemBuilder removeItemFlags(@NotNull ItemFlag... itemFlags) {
         @Nullable final ItemMeta itemMeta = itemStack.getItemMeta();
         if(itemMeta == null) return this;
@@ -248,10 +248,6 @@ public class ItemBuilder {
 
     public @NotNull ItemBuilder removeItemFlags(@NotNull List<ItemFlag> itemFlags) {
         return removeItemFlags(itemFlags.toArray(new ItemFlag[0]));
-    }
-
-    public @NotNull ItemBuilder hideAttributes() {
-        return addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
     }
 
     public @NotNull ItemBuilder unbreakable(final boolean state) {

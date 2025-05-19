@@ -1,8 +1,7 @@
 package com.agonkolgeci.nexus_hub.core.jumps.components;
 
-import com.agonkolgeci.nexus.common.config.ConfigSection;
-import com.agonkolgeci.nexus.common.config.ConfigUtils;
-import com.agonkolgeci.nexus.plugin.AbstractAddon;
+import com.agonkolgeci.nexus.api.config.ConfigSection;
+import com.agonkolgeci.nexus.api.config.ConfigUtils;
 import com.agonkolgeci.nexus.utils.render.MessageUtils;
 import com.agonkolgeci.nexus_hub.core.jumps.JumpManager;
 import com.agonkolgeci.nexus_hub.core.jumps.JumpsManager;
@@ -17,14 +16,13 @@ import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
-public class JumpLeaderboard extends AbstractAddon<JumpsManager> {
+public class JumpLeaderboard {
+
+    @NotNull private final JumpsManager jumpsManager;
 
     @NotNull private final JumpManager jumpManager;
     @NotNull private final ConfigSection configuration;
@@ -36,9 +34,8 @@ public class JumpLeaderboard extends AbstractAddon<JumpsManager> {
 
     @NotNull private final Hologram hologram;
 
-    public JumpLeaderboard(@NotNull JumpsManager module, @NotNull JumpManager jumpManager, @NotNull ConfigSection configuration) {
-        super(module);
-
+    public JumpLeaderboard(@NotNull JumpsManager jumpsManager, @NotNull JumpManager jumpManager, @NotNull ConfigSection configuration) {
+        this.jumpsManager = jumpsManager;
         this.jumpManager = jumpManager;
         this.configuration = configuration;
 
@@ -53,26 +50,26 @@ public class JumpLeaderboard extends AbstractAddon<JumpsManager> {
     public void update() {
         @NotNull final LinkedHashMap<OfflinePlayer, Integer> records = jumpManager.retrieveRecords(limit);
         if(!records.isEmpty()) {
-            int position = 1;
-            DHAPI.setHologramLines(
-                    hologram,
-                    Stream.concat(
-                            Stream.of(this.title, ""),
-                            records.entrySet().stream().map(entry ->
-                                    LegacyComponentSerializer.legacyAmpersand().serialize(
-                                            Component.text()
-                                                    .append(Component.text(position + ".", NamedTextColor.YELLOW, TextDecoration.BOLD))
-                                                    .appendSpace()
-                                                    .append(Component.text(Objects.requireNonNull(entry.getKey().getName()), NamedTextColor.WHITE))
-                                                    .appendSpace()
-                                                    .append(Component.text("-", NamedTextColor.GRAY))
-                                                    .appendSpace()
-                                                    .append(module.retrieveTimer(entry.getValue()))
-                                                    .build()
-                                    )
-                            )
-                    ).collect(Collectors.toList())
-            );
+            @NotNull final List<String> lines = new ArrayList<>(Arrays.asList(title, ""));
+
+            final AtomicInteger position = new AtomicInteger(1);
+            records.forEach((player, time) -> {
+                lines.add(LegacyComponentSerializer.legacyAmpersand().serialize(
+                        Component.text()
+                                .append(Component.text(position + ".", NamedTextColor.YELLOW, TextDecoration.BOLD))
+                                .appendSpace()
+                                .append(Component.text(Objects.requireNonNull(player.getName()), NamedTextColor.WHITE))
+                                .appendSpace()
+                                .append(Component.text("-", NamedTextColor.GRAY))
+                                .appendSpace()
+                                .append(jumpsManager.retrieveTimer(time))
+                                .build()
+                ));
+
+                position.getAndIncrement();
+            });
+
+            DHAPI.setHologramLines(hologram, lines);
         } else {
             DHAPI.setHologramLines(hologram, List.of(LegacyComponentSerializer.legacyAmpersand().serialize(Component.text("Aucun score", NamedTextColor.GRAY))));
         }

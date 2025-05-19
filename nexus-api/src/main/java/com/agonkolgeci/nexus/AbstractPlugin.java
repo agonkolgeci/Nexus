@@ -1,7 +1,7 @@
 package com.agonkolgeci.nexus;
 
-import com.agonkolgeci.nexus.common.commands.CommandsManager;
-import com.agonkolgeci.nexus.common.events.EventsManager;
+import com.agonkolgeci.nexus.api.commands.CommandsManager;
+import com.agonkolgeci.nexus.api.events.EventsManager;
 import com.agonkolgeci.nexus.plugin.PluginAdapter;
 import lombok.Getter;
 import org.bukkit.Server;

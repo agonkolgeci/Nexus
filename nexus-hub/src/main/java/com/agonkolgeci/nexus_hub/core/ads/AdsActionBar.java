@@ -1,14 +1,12 @@
 package com.agonkolgeci.nexus_hub.core.ads;
 
-import com.agonkolgeci.nexus.common.config.ConfigSection;
-import com.agonkolgeci.nexus.plugin.AbstractAddon;
+import com.agonkolgeci.nexus.api.config.ConfigSection;
 import com.agonkolgeci.nexus.plugin.PluginAdapter;
-import com.agonkolgeci.nexus.plugin.PluginScheduler;
 import com.agonkolgeci.nexus.utils.objects.ObjectUtils;
 import com.agonkolgeci.nexus.utils.objects.list.CircularQueue;
 import com.agonkolgeci.nexus.utils.render.MessageUtils;
-import com.agonkolgeci.nexus_hub.core.players.HubPlayer;
 import lombok.Getter;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -19,22 +17,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-public class AdsActionBar extends AbstractAddon<AdsManager> implements PluginAdapter, PluginScheduler {
+public class AdsActionBar implements PluginAdapter {
 
+    @NotNull private final AdsManager adsManager;
     @NotNull private final ConfigSection configuration;
 
     private final int delay;
     private final int period;
 
     @NotNull private final CircularQueue<String> messages;
+    @NotNull private final List<Audience> audiences;
 
-    @Nullable private BukkitTask currentTask;
+    @NotNull private final BukkitTask currentTask;
 
-    @NotNull private final List<HubPlayer> targetAudiences;
-
-    public AdsActionBar(@NotNull AdsManager module, @NotNull ConfigSection configuration) {
-        super(module);
-
+    public AdsActionBar(@NotNull AdsManager adsManager, @NotNull ConfigSection configuration) {
+        this.adsManager = adsManager;
         this.configuration = configuration;
 
         this.delay = configuration.require("delay");
@@ -42,71 +39,52 @@ public class AdsActionBar extends AbstractAddon<AdsManager> implements PluginAda
 
         this.messages = new CircularQueue<>(configuration.require("messages"));
 
-        this.targetAudiences = new ArrayList<>();
+        this.audiences = new ArrayList<>();
+
+        this.currentTask = new BukkitRunnable() {
+            @Nullable private Component message;
+
+            private final int interval = period;
+            private int seconds = 0;
+
+            @Override
+            public void run() {
+                if(seconds == 0) {
+                    message = MessageUtils.MM_SERIALIZER.deserializeOrNull(messages.next());
+                    seconds = interval;
+                }
+
+                if(message == null) {
+                    this.cancel();
+
+                    return;
+                }
+
+                audiences.forEach(audience -> audience.sendActionBar(message));
+
+                seconds--;
+            }
+        }.runTaskTimer(adsManager.getPlugin(), ObjectUtils.toTicks(delay), ObjectUtils.toTicks(1));
     }
 
     @Override
     public void load() throws Exception {
         if(messages.isEmpty()) {
-            module.getLogger().warning("There are no messages configured for ads in the actionBar.");
-        }
-
-        if(!isRunning()) {
-            this.start();
+            adsManager.getLogger().warning("There are no messages configured for ads in the actionBar.");
         }
     }
 
     @Override
     public void unload() {
-        if(isRunning()) {
-            this.stop();
-        }
+
     }
 
-    @Override
-    public @NotNull BukkitTask start() {
-        if(isRunning()) throw new TaskRunningException();
-
-        return this.currentTask = new BukkitRunnable() {
-            private final int interval = period;
-            private int seconds = 0;
-
-            @Nullable Component currentMessage;
-
-            @Override
-            public void run() {
-                if(seconds == 0) {
-                    currentMessage = MessageUtils.MM_SERIALIZER.deserializeOrNull(messages.next());
-                    seconds = interval;
-                }
-
-                if(currentMessage == null) {
-                    stop();
-
-                    return;
-                }
-
-                targetAudiences.forEach(playerCache -> playerCache.getPlayer().sendActionBar(currentMessage));
-
-                seconds--;
-            }
-        }.runTaskTimer(module.getPlugin(), ObjectUtils.retrieveTicks(delay), ObjectUtils.retrieveTicks(1));
+    public void addAudience(@NotNull Audience audience) {
+        audiences.add(audience);
     }
 
-    @Override
-    public void stop() {
-        if(!isRunning()) throw new TaskNotRunningException();
-
-        this.currentTask.cancel();
-        this.currentTask = null;
-    }
-
-    public void loadPlayer(@NotNull HubPlayer hubPlayer) {
-        targetAudiences.add(hubPlayer);
-    }
-
-    public void unloadPlayer(@NotNull HubPlayer hubPlayer) {
-        targetAudiences.remove(hubPlayer);
+    public void removeAudience(@NotNull Audience audience) {
+        audiences.remove(audience);
     }
 
 }

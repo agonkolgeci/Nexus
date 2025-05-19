@@ -1,25 +1,22 @@
 package com.agonkolgeci.nexus_hub.core.spawn;
 
-import com.agonkolgeci.nexus.api.interactions.PlayerItemInteractCallback;
-import com.agonkolgeci.nexus.api.players.events.PlayerLogoutEvent;
-import com.agonkolgeci.nexus.api.players.events.PlayerReadyEvent;
-import com.agonkolgeci.nexus.common.config.ConfigSection;
-import com.agonkolgeci.nexus.common.config.ConfigUtils;
+import com.agonkolgeci.nexus.api.config.ConfigSection;
+import com.agonkolgeci.nexus.api.config.ConfigUtils;
+import com.agonkolgeci.nexus.api.events.ListenerAdapter;
+import com.agonkolgeci.nexus.core.binder.item.InteractionsBinder;
+import com.agonkolgeci.nexus.core.binder.item.ItemInteractCallback;
+import com.agonkolgeci.nexus.core.gui.GuiManager;
 import com.agonkolgeci.nexus.plugin.PluginAdapter;
 import com.agonkolgeci.nexus.plugin.PluginManager;
 import com.agonkolgeci.nexus.utils.entity.PlayerUtils;
 import com.agonkolgeci.nexus.utils.world.ItemBuilder;
 import com.agonkolgeci.nexus_hub.NexusHub;
-import com.agonkolgeci.nexus_hub.core.gui.main.GuiMain;
-import com.agonkolgeci.nexus_hub.core.players.HubPlayer;
+import com.agonkolgeci.nexus_hub.core.gui.main.MainGui;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
@@ -32,6 +29,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -40,7 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Getter
-public class SpawnManager extends PluginManager<NexusHub> implements PluginAdapter {
+public class SpawnManager extends PluginManager<NexusHub> implements PluginAdapter, ListenerAdapter {
 
     public static final float SPAWN_WALK_SPEED = PlayerUtils.DEFAULT_WALK_SPEED * 1.5F;
     public static final float SPAWN_FLY_SPEED = PlayerUtils.DEFAULT_FLY_SPEED * 2F;
@@ -50,7 +48,7 @@ public class SpawnManager extends PluginManager<NexusHub> implements PluginAdapt
     @NotNull private final World world;
     @NotNull private final Location center;
 
-    @NotNull private final Map<Integer, ItemStack> items;
+    @NotNull private final Map<Integer, ItemStack> hotbarItems;
 
     public SpawnManager(@NotNull NexusHub instance, @NotNull ConfigSection configuration) {
         super(instance);
@@ -60,62 +58,79 @@ public class SpawnManager extends PluginManager<NexusHub> implements PluginAdapt
         this.world = ConfigUtils.retrieveWorld(instance, configuration.of());
         this.center = ConfigUtils.retrieveLocation(world, configuration.of("center"));
 
-        this.items = new HashMap<Integer, ItemStack>() {{
-            put(4, instance.getInteractionsManager().handle(new ItemBuilder(Material.COMPASS).displayName(Component.text("Menu Principal", NamedTextColor.GREEN, TextDecoration.BOLD)).build(), (PlayerItemInteractCallback) (player, itemStack) -> instance.getGuiManager().openGui(player, new GuiMain(instance))));
-        }};
+        this.hotbarItems = new HashMap<>() {{
+            put(4, InteractionsBinder.bind(new ItemBuilder(Material.COMPASS).displayName(Component.text("Menu Principal", NamedTextColor.GREEN, TextDecoration.BOLD)).build(), (ItemInteractCallback) (player, itemStack) -> GuiManager.openGui(player, new MainGui(instance))));
+        }};;
     }
 
     @Override
     public void load() throws Exception {
         this.setupWorld();
 
-        instance.getCommandsManager().registerCommandAdapter("spawn", new SpawnCommand(this));
+        instance.getEventsManager().registerAdapter(this);
+
+        instance.getCommandsManager().registerAdapter("spawn", new SpawnCommand(this));
+
+        instance.getServer().getOnlinePlayers().forEach(this::addPlayer);
     }
 
     @Override
     public void unload() {
+        instance.getEventsManager().unregisterAdapter(this);
+
+        instance.getServer().getOnlinePlayers().forEach(this::removePlayer);
     }
 
     public void setupWorld() {
         world.setStorm(false);
         world.setThundering(false);
         world.setTime(6000L);
-        world.setGameRuleValue("doDaylightCycle", "false");
+        world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
     }
 
-    public void loadPlayer(@NotNull HubPlayer hubPlayer) {
-        PlayerUtils.clearPlayer(hubPlayer.getPlayer());
-        PlayerUtils.giveItems(hubPlayer.getPlayer(), items);
-
-        hubPlayer.getPlayer().setGameMode(hubPlayer.getPlayer().isOp() ? GameMode.CREATIVE : GameMode.ADVENTURE);
-        hubPlayer.getPlayer().setWalkSpeed(SPAWN_WALK_SPEED);
-        hubPlayer.getPlayer().setFlySpeed(SPAWN_FLY_SPEED);
+    public void teleport(@NotNull Entity entity) {
+        entity.teleport(center);
     }
 
-    public void unloadPlayer(@NotNull HubPlayer hubPlayer) {
-        PlayerUtils.clearPlayer(hubPlayer.getPlayer());
+    public void addPlayer(@NotNull Player player) {
+        PlayerUtils.clearPlayer(player);
+        PlayerUtils.giveItems(player, hotbarItems);
 
-        hubPlayer.getPlayer().setWalkSpeed(PlayerUtils.DEFAULT_WALK_SPEED);
-        hubPlayer.getPlayer().setFlySpeed(PlayerUtils.DEFAULT_FLY_SPEED);
+        player.setGameMode(player.isOp() ? GameMode.CREATIVE : GameMode.ADVENTURE);
+        player.setWalkSpeed(SPAWN_WALK_SPEED);
+        player.setFlySpeed(SPAWN_FLY_SPEED);
+
+        instance.getAdsManager().getAdsActionBar().addAudience(player);
+        instance.getAdsManager().getAdsBossBar().addAudience(player);
     }
 
-    public void teleportPlayer(@NotNull Player player) {
-        player.teleport(center);
+    public void removePlayer(@NotNull Player player) {
+        PlayerUtils.clearPlayer(player);
+
+        player.setWalkSpeed(PlayerUtils.DEFAULT_WALK_SPEED);
+        player.setFlySpeed(PlayerUtils.DEFAULT_FLY_SPEED);
+
+        instance.getAdsManager().getAdsActionBar().removeAudience(player);
+        instance.getAdsManager().getAdsBossBar().removeAudience(player);
     }
 
     @EventHandler
     public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
-        this.teleportPlayer(event.getPlayer());
+        @NotNull final Player player = event.getPlayer();
+
+        this.addPlayer(player);
+        this.teleport(player);
+
+        event.joinMessage(Component.empty().append(player.displayName()).appendSpace().append(Component.text("vient de rejoindre le Hub !", NamedTextColor.GREEN)));
     }
 
     @EventHandler
-    public void onPlayerReady(@NotNull PlayerReadyEvent event) {
-        this.loadPlayer(instance.getPlayersController().retrievePlayerCache(event.getPlayer()));
-    }
+    public void onPlayerQuit(@NotNull PlayerQuitEvent event) {
+        @NotNull final Player player = event.getPlayer();
 
-    @EventHandler
-    public void onPlayerLogout(@NotNull PlayerLogoutEvent event) {
-        this.unloadPlayer(instance.getPlayersController().retrievePlayerCache(event.getPlayer()));
+        this.removePlayer(player);
+
+        event.quitMessage(Component.empty().append(player.displayName()).appendSpace().append(Component.text("vient de quitter le Hub !", NamedTextColor.RED)));
     }
 
     @EventHandler
@@ -125,7 +140,7 @@ public class SpawnManager extends PluginManager<NexusHub> implements PluginAdapt
 
         switch (event.getCause()) {
             case VOID: {
-                entity.teleport(center);
+                this.teleport(entity);
             }
 
             default: {

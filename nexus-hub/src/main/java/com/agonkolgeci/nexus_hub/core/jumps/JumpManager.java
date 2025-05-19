@@ -1,7 +1,8 @@
 package com.agonkolgeci.nexus_hub.core.jumps;
 
-import com.agonkolgeci.nexus.common.config.ConfigSection;
-import com.agonkolgeci.nexus.common.config.ConfigUtils;
+import com.agonkolgeci.nexus.api.config.ConfigSection;
+import com.agonkolgeci.nexus.api.config.ConfigUtils;
+import com.agonkolgeci.nexus.api.events.ListenerAdapter;
 import com.agonkolgeci.nexus.plugin.PluginAdapter;
 import com.agonkolgeci.nexus.plugin.PluginManager;
 import com.agonkolgeci.nexus.utils.objects.ObjectUtils;
@@ -10,7 +11,6 @@ import com.agonkolgeci.nexus_hub.NexusHub;
 import com.agonkolgeci.nexus_hub.core.jumps.components.JumpLeaderboard;
 import com.agonkolgeci.nexus_hub.core.jumps.components.JumpLocation;
 import com.agonkolgeci.nexus_hub.core.jumps.components.JumpPlayer;
-import com.agonkolgeci.nexus_hub.core.players.HubPlayer;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
@@ -18,8 +18,8 @@ import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Getter
-public class JumpManager extends PluginManager<NexusHub> implements PluginAdapter, Listener {
+public class JumpManager extends PluginManager<NexusHub> implements PluginAdapter, ListenerAdapter {
 
     @NotNull private final JumpsManager jumpsManager;
 
@@ -97,8 +97,7 @@ public class JumpManager extends PluginManager<NexusHub> implements PluginAdapte
             while (results.next()) {
                 try {
                     @NotNull final UUID uuid = UUID.fromString(results.getString("player_uuid"));
-                    @Nullable final OfflinePlayer offlinePlayer = instance.getServer().getOfflinePlayer(uuid);
-                    if(offlinePlayer == null) continue;
+                    @NotNull final OfflinePlayer offlinePlayer = instance.getServer().getOfflinePlayer(uuid);
 
                     final int time = results.getInt("time");
 
@@ -116,16 +115,21 @@ public class JumpManager extends PluginManager<NexusHub> implements PluginAdapte
 
     @Override
     public void load() {
+        jumpsManager.getInstance().getEventsManager().registerAdapter(this);
+
         leaderboard.update();
     }
 
     @Override
     public void unload() {
+        jumpsManager.getInstance().getEventsManager().unregisterAdapter(this);
     }
 
     @EventHandler
     public void onPlayerInteract(@NotNull PlayerInteractEvent event) {
         if(event.getAction() != Action.PHYSICAL) return;
+
+        @NotNull final Player player = event.getPlayer();
 
         @Nullable final Block interactedBlock = event.getClickedBlock();
         if(interactedBlock == null) return;
@@ -134,15 +138,14 @@ public class JumpManager extends PluginManager<NexusHub> implements PluginAdapte
         @Nullable final InteractionType interactionType = InteractionType.retrieveInteractionType(this, interactedLocation);
         if(interactionType == null) return;
 
-        @NotNull final HubPlayer hubPlayer = instance.getPlayersController().retrievePlayerCache(event.getPlayer());
-        @Nullable final JumpPlayer jumpPlayer = jumpsManager.retrieveJumpPlayer(hubPlayer);
+        @Nullable final JumpPlayer jumpPlayer = jumpsManager.getJumpPlayer(player);
 
         try {
             switch (interactionType) {
                 case START: {
                     if(jumpPlayer != null) return;
 
-                    jumpsManager.addPlayer(this, hubPlayer);
+                    jumpsManager.addPlayer(this, player);
 
                     break;
                 }
@@ -172,23 +175,21 @@ public class JumpManager extends PluginManager<NexusHub> implements PluginAdapte
                 }
             }
         } catch (RuntimeException exception) {
-            jumpsManager.removePlayer(hubPlayer);
+            jumpsManager.removePlayer(player);
 
-            hubPlayer.getPlayer().sendMessage(JumpsManager.MESSAGING.error(exception));
-        } catch (Exception exception) {
-            exception.printStackTrace();
+            player.sendMessage(JumpsManager.MESSAGING.error(exception));
         }
     }
 
     @EventHandler
     public void onPlayerMove(@NotNull PlayerMoveEvent event) {
-        @NotNull final HubPlayer hubPlayer = instance.getPlayersController().retrievePlayerCache(event.getPlayer());
-        @Nullable final JumpPlayer jumpPlayer = jumpsManager.retrieveJumpPlayer(hubPlayer);
-        if(jumpPlayer == null) return;
+        @NotNull final Player player = event.getPlayer();
 
-        if(hubPlayer.getPlayer().getLocation().getY() >= jumpPlayer.retrieveLatestLocation().getLowerY()) return;
+        jumpsManager.computeIfPresent(player, jumpPlayer -> {
+            if(player.getLocation().getY() >= jumpPlayer.retrieveLatestLocation().getLowerY()) return;
 
-        jumpPlayer.back();
+            jumpPlayer.back();
+        });
     }
 
     public enum InteractionType {
