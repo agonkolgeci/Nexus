@@ -79,7 +79,7 @@ public class StylizerManager extends PluginManager<NexusAPI> implements PluginAd
             final int maxWeight = groups.stream().map(g -> g.getWeight().orElse(0)).max(Comparator.naturalOrder()).orElse(0);
             final int position = maxWeight - group.getWeight().orElse(0);
 
-            @NotNull final String teamName = new StringJoiner("_").add("0" + position).add(group.getName()).toString();
+            @NotNull final String teamName = String.format("%03d_%s", position, group.getName());
             @NotNull final Team team = ObjectUtils.requireNonNullElseGet(scoreboard.getTeam(teamName), () -> {
                 return scoreboard.registerNewTeam(teamName);
             });
