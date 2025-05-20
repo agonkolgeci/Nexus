@@ -102,7 +102,7 @@ public class JumpsManager extends PluginManager<NexusHub> implements PluginAdapt
         final long seconds = duration.getSeconds() % 60;
         final long milliseconds = duration.toMillis() % 1000;
 
-        return Component.text(String.format("%02d:%02d:%02d:%03d", hours, minutes, seconds, milliseconds), NamedTextColor.YELLOW, TextDecoration.BOLD);
+        return Component.text(String.format("%02d:%02d:%02d,%03d", hours, minutes, seconds, milliseconds), NamedTextColor.YELLOW, TextDecoration.BOLD);
     }
 
     public void computeIfPresent(@NotNull Player player, @NotNull Consumer<JumpPlayer> consumer) {
