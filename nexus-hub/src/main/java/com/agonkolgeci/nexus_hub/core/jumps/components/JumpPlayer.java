@@ -15,6 +15,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
 
 @Getter
@@ -27,8 +29,8 @@ public class JumpPlayer {
 
     @Nullable private Map.Entry<Integer, JumpLocation> checkpoint;
 
-    private int record;
-    private int elapsed;
+    private Duration record;
+    private Instant start;
 
     @Nullable private BukkitTask currentTask;
 
@@ -40,19 +42,18 @@ public class JumpPlayer {
         this.checkpoint = null;
 
         this.record = retrieveRecord();
-        this.elapsed = 0;
 
         this.currentTask = null;
     }
 
-    public int retrieveRecord() {
-        int record = Integer.MAX_VALUE;
+    public Duration retrieveRecord() {
+        Duration record = null;
 
         try {
             @NotNull final ResultSet results = jumpsManager.getInstance().getDatabaseManager().executeQuery("SELECT * FROM jumps_records WHERE jump_name = ? AND player_uuid = ?", jumpManager.getName(), player.getUniqueId().toString());
 
             if(results.next()) {
-                record = results.getInt("time");
+                record = Duration.ofMillis(results.getLong("time"));
             }
 
             jumpsManager.getInstance().getDatabaseManager().closeResults(results);
@@ -64,18 +65,17 @@ public class JumpPlayer {
     }
 
     public boolean hasRecord() {
-        return record != Integer.MAX_VALUE;
+        return record != null;
     }
 
-    public void setRecord(int record) {
+    public void setRecord(Duration record) {
         this.record = record;
 
-        jumpsManager.getInstance().getDatabaseManager().executeUpdate("INSERT INTO jumps_records(jump_name, player_uuid, time) VALUES(?, ?, ?) ON DUPLICATE KEY UPDATE time = VALUES(time)", jumpManager.getName(), player.getUniqueId().toString(), record);
+        jumpsManager.getInstance().getDatabaseManager().executeUpdate("INSERT INTO jumps_records(jump_name, player_uuid, time) VALUES(?, ?, ?) ON DUPLICATE KEY UPDATE time = VALUES(time)", jumpManager.getName(), player.getUniqueId().toString(), record.toMillis());
     }
 
     public void start() {
         jumpsManager.getInstance().getSpawnManager().removePlayer(player);
-        jumpsManager.getInstance().getAdsManager().getAdsActionBar().removeAudience(player);
 
         player.setGameMode(GameMode.ADVENTURE);
         player.setWalkSpeed(jumpManager.getWalkSpeed());
@@ -90,19 +90,17 @@ public class JumpPlayer {
             player.sendMessage(JumpsManager.MESSAGING.success(Component.text("Vous n'avez aucun record personnel.").colorIfAbsent(NamedTextColor.GRAY)));
         }
 
+        this.start = Instant.now();
         this.currentTask = new BukkitRunnable() {
             @Override
             public void run() {
-                player.sendActionBar(jumpsManager.retrieveTimer(elapsed));
-
-                elapsed++;
+                player.sendActionBar(jumpsManager.retrieveTimer(Duration.between(start, Instant.now())));
             }
         }.runTaskTimer(jumpsManager.getPlugin(), 0, 1);
     }
 
     public void stop() {
         jumpsManager.getInstance().getSpawnManager().addPlayer(player);
-        jumpsManager.getInstance().getAdsManager().getAdsActionBar().addAudience(player);
 
         if(currentTask != null) {
             currentTask.cancel();
@@ -125,13 +123,15 @@ public class JumpPlayer {
 
         jumpsManager.removePlayer(player);
 
-        player.sendMessage(JumpsManager.MESSAGING.success(Component.text("Vous avez terminé le").appendSpace().append(jumpManager.getDisplayName().color(NamedTextColor.YELLOW)).appendSpace().append(Component.text("en")).appendSpace().append(jumpsManager.retrieveTimer(elapsed)).appendSpace().append(Component.text("!")).colorIfAbsent(NamedTextColor.GOLD)));
+        final Duration finalTime = Duration.between(start, Instant.now());
+
+        player.sendMessage(JumpsManager.MESSAGING.success(Component.text("Vous avez terminé le").appendSpace().append(jumpManager.getDisplayName().color(NamedTextColor.YELLOW)).appendSpace().append(Component.text("en")).appendSpace().append(jumpsManager.retrieveTimer(finalTime)).appendSpace().append(Component.text("!")).colorIfAbsent(NamedTextColor.GOLD)));
 
         final boolean newRecord = !hasRecord();
-        final boolean beatRecord = elapsed < record && !newRecord;
+        final boolean beatRecord = finalTime.compareTo(record) < 0 && !newRecord;
 
         if(newRecord || beatRecord) {
-            this.setRecord(elapsed);
+            this.setRecord(finalTime);
 
             if(beatRecord) {
                 player.sendMessage(JumpsManager.MESSAGING.info(Component.text("Félicitations, vous avez battu votre record personnel !").colorIfAbsent(NamedTextColor.GREEN)));
@@ -140,7 +140,7 @@ public class JumpPlayer {
             player.sendMessage(JumpsManager.MESSAGING.info(Component.text("Votre nouveau record personnel est de").appendSpace().append(jumpsManager.retrieveTimer(record)).append(Component.text(".")).colorIfAbsent(NamedTextColor.GREEN)));
         }
 
-        player.sendMessage(JumpsManager.MESSAGING.success(Component.text().append(player.displayName()).appendSpace().append(Component.text("vient de terminer le")).appendSpace().append(jumpManager.getDisplayName().color(NamedTextColor.YELLOW)).appendSpace().append(Component.text("en")).appendSpace().append(jumpsManager.retrieveTimer(elapsed)).appendSpace().append(Component.text("!")).colorIfAbsent(NamedTextColor.GREEN).build()));
+        jumpsManager.getInstance().getServer().sendMessage(JumpsManager.MESSAGING.success(Component.text().append(player.displayName()).appendSpace().append(Component.text("vient de terminer le")).appendSpace().append(jumpManager.getDisplayName().color(NamedTextColor.YELLOW)).appendSpace().append(Component.text("en")).appendSpace().append(jumpsManager.retrieveTimer(finalTime)).appendSpace().append(Component.text("!")).colorIfAbsent(NamedTextColor.GREEN).build()));
         EffectsUtils.spawnFireworks(player.getLocation(), 5, 5);
 
         jumpManager.getLeaderboard().update();
@@ -150,14 +150,16 @@ public class JumpPlayer {
         player.teleport(retrieveLatestLocation().toCenter());
 
         if(checkpoint == null) {
-            elapsed = 0;
+            start = Instant.now();
         }
     }
 
     public void setCheckpoint(@NotNull Map.Entry<Integer, JumpLocation> checkpoint) {
         this.checkpoint = checkpoint;
 
-        player.sendMessage(JumpsManager.MESSAGING.info(Component.text("Vous avez atteint le checkpoint").appendSpace().append(Component.text("#" + checkpoint.getKey(), NamedTextColor.YELLOW)).appendSpace().append(Component.text("en")).appendSpace().append(jumpsManager.retrieveTimer(elapsed)).append(Component.text(".")).colorIfAbsent(NamedTextColor.GOLD)));
+        final Duration currentTime = Duration.between(start, Instant.now());
+
+        player.sendMessage(JumpsManager.MESSAGING.info(Component.text("Vous avez atteint le checkpoint").appendSpace().append(Component.text("#" + checkpoint.getKey(), NamedTextColor.YELLOW)).appendSpace().append(Component.text("en")).appendSpace().append(jumpsManager.retrieveTimer(currentTime)).append(Component.text(".")).colorIfAbsent(NamedTextColor.GOLD)));
     }
 
     @Nullable

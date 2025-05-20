@@ -28,6 +28,8 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,13 +96,13 @@ public class JumpsManager extends PluginManager<NexusHub> implements PluginAdapt
     }
 
     @NotNull
-    public Component retrieveTimer(int time) {
-        final int hours = (time / 20) / 3600;
-        final int minutes = ((time / 20) % 3600) / 60;
-        final int seconds = (time / 20) % 60;
-        final int ticks = time % 20;
+    public Component retrieveTimer(Duration duration) {
+        final long hours = duration.toHours();
+        final long minutes = duration.toMinutes() % 60;
+        final long seconds = duration.getSeconds() % 60;
+        final long milliseconds = duration.toMillis() % 1000;
 
-        return Component.text(String.format("%02d:%02d:%02d,%02d", hours, minutes, seconds, ticks), NamedTextColor.YELLOW, TextDecoration.BOLD);
+        return Component.text(String.format("%02d:%02d:%02d:%03d", hours, minutes, seconds, milliseconds), NamedTextColor.YELLOW, TextDecoration.BOLD);
     }
 
     public void computeIfPresent(@NotNull Player player, @NotNull Consumer<JumpPlayer> consumer) {

@@ -28,6 +28,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -88,8 +89,8 @@ public class JumpManager extends PluginManager<NexusHub> implements PluginAdapte
     }
 
     @NotNull
-    public LinkedHashMap<OfflinePlayer, Integer> retrieveRecords(int limit) {
-        @NotNull final LinkedHashMap<OfflinePlayer, Integer> records = new LinkedHashMap<>();
+    public LinkedHashMap<OfflinePlayer, Duration> retrieveRecords(int limit) {
+        @NotNull final LinkedHashMap<OfflinePlayer, Duration> records = new LinkedHashMap<>();
 
         try {
             @NotNull final ResultSet results = instance.getDatabaseManager().executeQuery("SELECT * FROM jumps_records WHERE jump_name = ? ORDER BY time ASC LIMIT ?", name, limit);
@@ -99,7 +100,7 @@ public class JumpManager extends PluginManager<NexusHub> implements PluginAdapte
                     @NotNull final UUID uuid = UUID.fromString(results.getString("player_uuid"));
                     @NotNull final OfflinePlayer offlinePlayer = instance.getServer().getOfflinePlayer(uuid);
 
-                    final int time = results.getInt("time");
+                    final Duration time = Duration.ofMillis(results.getLong("time"));
 
                     records.put(offlinePlayer, time);
                 } catch (IllegalArgumentException ignored) {}

@@ -16,6 +16,7 @@ import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -48,7 +49,7 @@ public class JumpLeaderboard {
     }
 
     public void update() {
-        @NotNull final LinkedHashMap<OfflinePlayer, Integer> records = jumpManager.retrieveRecords(limit);
+        @NotNull final LinkedHashMap<OfflinePlayer, Duration> records = jumpManager.retrieveRecords(limit);
         if(!records.isEmpty()) {
             @NotNull final List<String> lines = new ArrayList<>(Arrays.asList(title, ""));
 
