@@ -5,7 +5,7 @@ import com.agonkolgeci.nexus.core.binder.item.InteractionsBinder;
 import com.agonkolgeci.nexus.core.binder.item.InventoryClickCallback;
 import com.agonkolgeci.nexus.core.gui.AbstractGui;
 import com.agonkolgeci.nexus.core.gui.GuiManager;
-import com.agonkolgeci.nexus.core.servers.Game;
+import com.agonkolgeci.nexus.core.server.Game;
 import com.agonkolgeci.nexus.utils.inventory.InventoryUtils;
 import com.agonkolgeci.nexus.utils.objects.ObjectUtils;
 import com.agonkolgeci.nexus.utils.render.MessageUtils;

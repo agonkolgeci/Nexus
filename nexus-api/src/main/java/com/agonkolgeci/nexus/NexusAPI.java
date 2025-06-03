@@ -3,7 +3,7 @@ package com.agonkolgeci.nexus;
 import com.agonkolgeci.nexus.core.binder.BinderManager;
 import com.agonkolgeci.nexus.core.gui.GuiManager;
 import com.agonkolgeci.nexus.core.messaging.MessagingManager;
-import com.agonkolgeci.nexus.core.servers.ServersManager;
+import com.agonkolgeci.nexus.core.server.ServersManager;
 import com.agonkolgeci.nexus.core.stylizer.StylizerManager;
 import lombok.Getter;
 import net.luckperms.api.LuckPerms;

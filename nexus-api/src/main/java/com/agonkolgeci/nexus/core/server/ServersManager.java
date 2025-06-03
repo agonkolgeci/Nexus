@@ -1,4 +1,4 @@
-package com.agonkolgeci.nexus.core.servers;
+package com.agonkolgeci.nexus.core.server;
 
 import com.agonkolgeci.nexus.NexusAPI;
 import com.agonkolgeci.nexus.core.messaging.PluginChannelType;

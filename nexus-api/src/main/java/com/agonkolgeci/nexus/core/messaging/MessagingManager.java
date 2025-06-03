@@ -8,10 +8,8 @@ import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import lombok.Getter;
-import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.Messenger;
-import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -66,7 +64,7 @@ public class MessagingManager extends PluginManager<NexusAPI> implements PluginA
         player.sendPluginMessage(plugin, channelType.getName(), out.toByteArray());
     }
 
-    public void wait(Player player, PluginChannelType channelType, Consumer<ByteArrayDataInput> input) {
+    public void listen(Player player, PluginChannelType channelType, Consumer<ByteArrayDataInput> input) {
         this.listeners.computeIfAbsent(channelType, k -> new HashMap<>()).computeIfAbsent(player.getUniqueId(), k -> new ArrayList<>()).add(input);
     }
 }
